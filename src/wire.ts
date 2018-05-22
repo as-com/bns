@@ -144,9 +144,9 @@ class Message extends Struct {
 	opcode: Opcode;
 	code: Code;
 	question: Question[];
-	answer: any[];
+	answer: Record[];
 	authority: Record[];
-	additional: any[];
+	additional: Record[];
 	edns: EDNS;
 	tsig: Record | null;
 	sig0: Record | null;
@@ -467,7 +467,8 @@ class Message extends Struct {
 				ttl = rr.ttl;
 
 			if (rr.type === RecordType.RRSIG) {
-				const e = rr.data.expiration;
+				const rrr = rr as Record<RRSIGRecord>;
+				const e = rrr.data.expiration;
 				const t = e - now;
 
 				if (t > 0 && t < ttl)
@@ -518,11 +519,12 @@ class Message extends Struct {
 				continue;
 
 			if (rr.type === RecordType.CNAME) {
-				target = rr.data.target;
+				let crr = rr as Record<CNAMERecord>;
+				target = crr.data.target;
 
 				if (type === RecordType.ANY
 					|| type === RecordType.CNAME) {
-					result.push(rr);
+					result.push(crr);
 				}
 
 				continue;
@@ -683,7 +685,7 @@ class Message extends Struct {
 				break;
 			}
 
-			const rr = Record.read(br);
+			const rr = Record.read<Record>(br);
 
 			this.answer.push(rr);
 		}
@@ -1394,8 +1396,8 @@ class EDNS extends Struct {
 		this.options = [];
 	}
 
-	inject(edns) {
-		assert(edns instanceof this.constructor);
+	inject(edns: EDNS) {
+		// assert(edns instanceof this.constructor);
 		this.enabled = edns.enabled;
 		this.size = edns.size;
 		this.code = edns.code;

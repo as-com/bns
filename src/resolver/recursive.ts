@@ -53,7 +53,7 @@ class RecursiveResolver extends DNSResolver {
         }
 
         if (options.hints != null) {
-            assert(options.hints instanceof Hints);
+			// assert(options.hints instanceof Hints);
             this.hints = options.hints;
         }
 
@@ -461,7 +461,7 @@ class RecursiveResolver extends DNSResolver {
         return false;
     }
 
-    async iterate(rc) {
+	async iterate(rc: ResolveContext) {
         this.log('Querying %s (%s).', rc.qs.name, typeToString(rc.qs.type));
 
         this.log('Switching authority: %s', rc.auth.name);
@@ -494,9 +494,9 @@ class RecursiveResolver extends DNSResolver {
         return rc;
     }
 
-    async follow(qs, hops) {
-        assert(qs instanceof Question);
-        assert(typeof hops === 'number');
+	async follow(qs: Question, hops: number) {
+		// assert(qs instanceof Question);
+		// assert(typeof hops === 'number');
 
         const ns = this.getAuthority();
         const rc = new ResolveContext(qs, ns, hops);
@@ -507,8 +507,8 @@ class RecursiveResolver extends DNSResolver {
         return this.iterate(rc);
     }
 
-    async resolve(qs) {
-        assert(qs instanceof Question);
+	async resolve(qs: Question): Promise<Message> {
+		// assert(qs instanceof Question);
 
 		if (!isName(qs.name))
             throw new Error('Invalid qname.');
@@ -541,7 +541,7 @@ class RecursiveResolver extends DNSResolver {
  * Resolve Context
  */
 
-class ResolveContext {
+export class ResolveContext {
 	question: Question;
 	ns: Authority;
 	hops: number;
@@ -598,7 +598,7 @@ class ResolveContext {
         return this;
     }
 
-    toAnswer() {
+	toAnswer(): Message {
         const res = new Message();
 
         res.id = this.res.id;

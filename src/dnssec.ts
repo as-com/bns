@@ -16,6 +16,7 @@ import * as assert from "assert";
 import * as bio from "bufio";
 import {algHashes, EncAlg, HashAlg, KeyFlag, RecordType} from "./constants";
 import * as crypto from "./crypto";
+import {Hash} from "crypto";
 import {packName, readName} from "./encoding";
 import * as util from "./util";
 import {countLabels, extractSet, isRRSet, splitName} from "./util";
@@ -43,6 +44,8 @@ export const hashToHash = {
 	[HashAlg.SHA384]: crypto.sha384,
 	[HashAlg.SHA512]: crypto.sha512
 };
+
+let $HACK: Hash;
 
 /*
  * DNSSEC
