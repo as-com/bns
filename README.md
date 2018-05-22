@@ -31,7 +31,7 @@ server.on('query', (req, res, rinfo) => {
   console.log('Incoming request:');
   console.log(req.toString());
 
-  // Respond with an A record (see lib/wire.js).
+  // Respond with an A record (see lib/wire.ts).
   if (question.name === 'example.com.') {
     const rr = new wire.Record();
 
@@ -95,7 +95,7 @@ const server = new RecursiveServer({
   dnssec: true
 });
 
-// Root Hints (see lib/hints.js):
+// Root Hints (see lib/hints.ts):
 server.hints.setDefault();
 
 // Custom hints:
@@ -128,13 +128,13 @@ const resolver = new StubResolver({
   dnssec: true
 });
 
-// Like /etc/hosts (see lib/hosts.js).
+// Like /etc/hosts (see lib/hosts.ts).
 resolver.setHosts([
   ['localhost.', '127.0.0.1'],
   ['localhost.', '::1']
 ]);
 
-// Like /etc/resolv.conf (see lib/resolvconf.js).
+// Like /etc/resolv.conf (see lib/resolvconf.ts).
 resolver.setServers(['8.8.8.8', '8.8.4.4']);
 
 resolver.on('log', (...args) => console.log(...args));
@@ -159,7 +159,7 @@ const resolver = new RecursiveResolver({
 });
 
 // Use default root hints and trust
-// anchors (see lib/hints.js).
+// anchors (see lib/hints.ts).
 resolver.hints.setDefault();
 
 resolver.on('log', (...args) => console.log(...args));

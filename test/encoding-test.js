@@ -6,14 +6,14 @@
 const assert = require('./util/assert');
 const constants = require('../lib/constants');
 const encoding = require('../lib/encoding');
-const {types} = constants;
+const {RecordType} = constants;
 
 const array = [
-  types.NS,
-  types.SOA,
-  types.RRSIG,
-  types.NSEC,
-  types.DNSKEY
+	RecordType.NS,
+	RecordType.SOA,
+	RecordType.RRSIG,
+	RecordType.NSEC,
+	RecordType.DNSKEY
 ];
 
 describe('Encoding', function() {

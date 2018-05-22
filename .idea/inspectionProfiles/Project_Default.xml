@@ -6,5 +6,6 @@
     </inspection_tool>
     <inspection_tool class="AutoUnboxing" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="ES6CheckImport" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="JSUnusedGlobalSymbols" enabled="true" level="INFORMATION" enabled_by_default="true" />
   </profile>
 </component>
