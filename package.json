@@ -1,6 +1,6 @@
 {
 	"name": "@as-com/bns",
-	"version": "0.0.17",
+	"version": "0.0.18",
 	"description": "DNS bike-shed -- Now with types!",
 	"private": false,
 	"keywords": [
@@ -17,6 +17,7 @@
 	},
 	"author": "Andrew Sun <me@andrewsun.com>",
 	"main": "./lib/bns.js",
+	"types": "./lib/bns.d.ts",
 	"bin": {
 		"dig.js": "./bin/dig.js",
 		"named.js": "./bin/named.js",

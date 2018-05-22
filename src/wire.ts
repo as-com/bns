@@ -1410,8 +1410,8 @@ class EDNS extends Struct {
 		return this;
 	}
 
-	clone() {
-		const copy = new EDNS();
+	clone(): this {
+		const copy = new (<any> this.constructor)();
 		return copy.inject(this);
 	}
 
@@ -1731,7 +1731,7 @@ class Question extends Struct {
 	}
 
 	clone() {
-		const qs = new Question();
+		const qs = new (<any> this.constructor)();
 		return qs.inject(this);
 	}
 
