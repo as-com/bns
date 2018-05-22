@@ -7,8 +7,8 @@
 'use strict';
 
 import * as assert from "assert";
-import fs from "bfile";
-import IP from "binet";
+import * as fs from "bfile";
+import * as IP from "binet";
 import {DNS_PORT} from "./constants";
 
 import * as util from "./util";
@@ -159,8 +159,8 @@ class ResolvConf {
         return '/etc/resolv.conf';
     }
 
-    getRaw(inet6) {
-        assert(typeof inet6 === 'boolean');
+	getRaw(inet6: boolean) {
+		// assert(typeof inet6 === 'boolean');
 
         const servers = [];
 

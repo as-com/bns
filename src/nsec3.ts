@@ -13,7 +13,7 @@
 'use strict';
 
 import * as assert from "assert";
-import base32 from "bs32";
+import * as base32 from "bs32";
 import {NsecHash, RecordType} from "./constants";
 import * as crypto from "./crypto";
 import {hasType, packName} from "./encoding";

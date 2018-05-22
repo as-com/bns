@@ -1,6 +1,6 @@
 {
 	"name": "@as-com/bns",
-	"version": "0.0.14",
+	"version": "0.0.16",
 	"description": "DNS bike-shed -- Now with types!",
 	"private": false,
 	"keywords": [
@@ -32,22 +32,23 @@
 		"browserify": "browserify -s bns lib/bns.js | uglifyjs -c > bns.js",
 		"clean": "rm -f bns.js",
 		"lint": "eslint bin/ lib/ test/ || exit 0",
-		"test": "mocha --reporter spec test/*-test.js",
-		"test-file": "mocha --reporter spec",
+		"test": "mocha --require ts-node/register --reporter spec test/*-test.ts",
+		"test-file": "mocha --require ts-node/register --reporter spec",
 		"webpack": "webpack --config webpack.config.js"
 	},
 	"dependencies": {
+		"@as-com/bufio": "~0.2.11",
 		"bfile": "~0.0.2",
 		"bheep": "~0.0.1",
 		"binet": "~0.2.0",
 		"bs32": "~0.0.1",
 		"btcp": "~0.0.2",
 		"budp": "~0.0.2",
-		"bufio": "~0.1.0",
 		"elliptic": "~6.4.0",
 		"tslib": "^1.9.1"
 	},
 	"devDependencies": {
+		"@types/mocha": "^5.2.0",
 		"@types/node": "^10.1.2",
 		"babel-core": "^6.26.0",
 		"babel-loader": "^7.1.4",
@@ -55,11 +56,19 @@
 		"babelify": "^8.0.0",
 		"browserify": "^16.1.1",
 		"mocha": "^5.0.4",
+		"ts-node": "^6.0.3",
 		"typescript": "^2.8.3",
 		"uglify-es": "^3.3.9",
 		"uglifyjs-webpack-plugin": "^1.2.3",
 		"webpack": "^4.1.1"
 	},
+	"files": [
+		"bin",
+		"hints",
+		"lib",
+		"LICENSE",
+		"README.md"
+	],
 	"engines": {
 		"node": ">=7.6.0"
 	},

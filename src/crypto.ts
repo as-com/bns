@@ -9,9 +9,9 @@
 import * as assert from "assert";
 import * as crypto from "crypto";
 import {Hash} from "crypto";
-import * as bio from "bufio";
-import elliptic from "elliptic";
-import Signature from "elliptic/lib/elliptic/ec/signature";
+import * as bio from "@as-com/bufio";
+import * as elliptic from "elliptic";
+import * as Signature from "elliptic/lib/elliptic/ec/signature";
 
 const EdDSA = elliptic.eddsa;
 
@@ -19,7 +19,7 @@ const EdDSA = elliptic.eddsa;
  * Hashing
  */
 
-class BaseHash {
+export abstract class BaseHash {
 	name: string;
 	ctx: Hash;
 
@@ -68,6 +68,10 @@ function createHash(name: string) {
 			const ctx = new this();
 			return ctx.init().update(data).final();
 		}
+
+		static get hashName() {
+			return name;
+		}
 	};
 }
 
@@ -101,7 +105,7 @@ export function signRSA(hash, data, key) {
 }
 
 export function verifyRSA(hash, data, sig, key) {
-	assert(hash && typeof hash.name === 'string', 'No algorithm selected.');
+	assert(hash && typeof hash.hashName === 'string', 'No algorithm selected.');
 	assert(Buffer.isBuffer(data));
 	assert(Buffer.isBuffer(sig));
 	assert(Buffer.isBuffer(key));
@@ -229,7 +233,7 @@ export function verifyEDDSA(curve, hash, data, sig, key) {
  */
 
 function toName(alg, hash) {
-	return `${alg}-${hash.name.toUpperCase()}`;
+	return `${alg}-${hash.hashName.toUpperCase()}`;
 }
 
 function toPEM(der, type) {

@@ -14,8 +14,8 @@
 'use strict';
 
 import * as assert from "assert";
-import IP from "binet";
-import base32 from "bs32";
+import * as IP from "binet";
+import * as base32 from "bs32";
 import {
 	EOption,
 	LOC_ALTITUDEBASE,

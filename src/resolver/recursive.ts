@@ -19,7 +19,7 @@ import * as encoding from "../encoding";
 import Hints from "../hints";
 import * as nsec3 from "../nsec3";
 import {equal, extractSet, filterSet, hasAll, hasType, isName, isSubdomain, random, randomItem} from "../util";
-import {Code, Message, Question, RecordType, typeToString} from "../wire";
+import {Code, DNSKEYRecord, DSRecord, Message, Question, Record, RecordType, typeToString} from "../wire";
 
 /**
  * RecursiveResolver
@@ -74,7 +74,7 @@ class RecursiveResolver extends DNSResolver {
         return this.hints.getAuthority(this.inet6);
     }
 
-    async ask(qs, auth) {
+	async ask(qs: Question, auth: Authority): Promise<[Message, boolean]> {
         const cache = this.cache.hit(qs, auth.zone);
 
         if (cache) {
@@ -129,7 +129,7 @@ class RecursiveResolver extends DNSResolver {
 		return this.findNS(rc, name, RecordType.A, zone);
     }
 
-    async lookupDNSKEY(qs, auth, ds) {
+	async lookupDNSKEY(qs: Question, auth: Authority, ds: Record<DSRecord>[]) {
         const [res, hit] = await this.ask(qs, auth);
 
         if (res.answer.length === 0
@@ -171,7 +171,7 @@ class RecursiveResolver extends DNSResolver {
 			if (rr.type !== RecordType.DNSKEY)
                 continue;
 
-            const rd = rr.data;
+			const rd = rr.data as DNSKEYRecord;
 
 			if (rd.flags & dnssec.KeyFlag.REVOKE)
                 continue;
@@ -306,7 +306,7 @@ class RecursiveResolver extends DNSResolver {
         }
     }
 
-    async handleTrust(rc) {
+	async handleTrust(rc: ResolveContext) {
         assert(rc.chain);
 
         this.log('Verifying zone change to [%s]', rc.auth.zone);
@@ -428,13 +428,13 @@ class RecursiveResolver extends DNSResolver {
         return true;
     }
 
-    async lookupNext(rc) {
+	async lookupNext(rc: ResolveContext) {
         const [res, hit] = await this.ask(rc.qs, rc.auth);
         rc.res = res;
         rc.hit = hit;
     }
 
-    async next(rc) {
+	async next(rc: ResolveContext) {
         await this.lookupNext(rc);
 
         if (rc.chain)

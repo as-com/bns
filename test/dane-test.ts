@@ -3,28 +3,27 @@
 
 'use strict';
 
-const assert = require('./util/assert');
-const dane = require('../lib/dane');
-const dns = require('../lib/dns');
-const tlsa = require('../lib/tlsa');
-const wire = require('../lib/wire');
-const {Record} = wire;
+import * as assert from "./util/assert";
+import * as dane from "../src/dane";
+import dns from "../src/dns";
+import * as tlsa from "../src/tlsa";
+import {Record, TLSARecord} from "../src/wire";
 
 function fromBase64(str) {
-  return Buffer.from(str.replace(/\s+/g, ''), 'base64');
+	return Buffer.from(str.replace(/\s+/g, ''), 'base64');
 }
 
-describe('DANE', function() {
-  it('should verify spki+sha256 cert (www.ietf.org)', () => {
-    // $ dig.js _443._tcp.www.ietf.org. TLSA
-    const str = '_443._tcp.www.ietf.org. 1500 IN TLSA'
-      + ' 3 1 1 0C72AC70B745AC19998811B131D662C9AC69DBDBE7CB23E5B514B566'
-      + ' 64C5D3D6';
-    const rr = Record.fromString(str);
-    const rd = rr.data;
+describe('DANE', function () {
+	it('should verify spki+sha256 cert (www.ietf.org)', () => {
+		// $ dig.js _443._tcp.www.ietf.org. TLSA
+		const str = '_443._tcp.www.ietf.org. 1500 IN TLSA'
+			+ ' 3 1 1 0C72AC70B745AC19998811B131D662C9AC69DBDBE7CB23E5B514B566'
+			+ ' 64C5D3D6';
+		const rr = Record.fromString<Record<TLSARecord>>(str);
+		const rd = rr.data;
 
-    // $ openssl s_client -showcerts -connect www.ietf.org:443 < /dev/null
-    const cert = fromBase64(`
+		// $ openssl s_client -showcerts -connect www.ietf.org:443 < /dev/null
+		const cert = fromBase64(`
       MIIFUTCCBDmgAwIBAgIIITAshaEP0OswDQYJKoZIhvcNAQELBQAwgcYxCzAJBgNV
       BAYTAlVTMRAwDgYDVQQIEwdBcml6b25hMRMwEQYDVQQHEwpTY290dHNkYWxlMSUw
       IwYDVQQKExxTdGFyZmllbGQgVGVjaG5vbG9naWVzLCBJbmMuMTMwMQYDVQQLEypo
@@ -56,20 +55,20 @@ describe('DANE', function() {
       WNyYOpbGqBfooA8nwwE20fpacX2i
     `);
 
-    assert(dane.verify(cert, rd.selector, rd.matchingType, rd.certificate));
-    assert(tlsa.verify(rr, cert, 'www.ietf.org', 'tcp', 443));
-  });
+		assert(dane.verify(cert, rd.selector, rd.matchingType, rd.certificate));
+		assert(tlsa.verify(rr, cert, 'www.ietf.org', 'tcp', 443));
+	});
 
-  it('should verify spki+sha256 cert (www.huque.com)', () => {
-    // $ dig.js _443._tcp.www.huque.com. TLSA
-    const str = '_443._tcp.www.huque.com. 4270 IN TLSA'
-      + ' 3 1 1 F6D8BB3FD6B09E73EBFC347F8F34E7ABB6AFB31105AE20ACEC4F1F57'
-      + ' 63FE7FC1';
-    const rr = Record.fromString(str);
-    const rd = rr.data;
+	it('should verify spki+sha256 cert (www.huque.com)', () => {
+		// $ dig.js _443._tcp.www.huque.com. TLSA
+		const str = '_443._tcp.www.huque.com. 4270 IN TLSA'
+			+ ' 3 1 1 F6D8BB3FD6B09E73EBFC347F8F34E7ABB6AFB31105AE20ACEC4F1F57'
+			+ ' 63FE7FC1';
+		const rr = Record.fromString<Record<TLSARecord>>(str);
+		const rd = rr.data;
 
-    // $ openssl s_client -showcerts -connect www.huque.com:443 < /dev/null
-    const cert = fromBase64(`
+		// $ openssl s_client -showcerts -connect www.huque.com:443 < /dev/null
+		const cert = fromBase64(`
       MIIE/TCCA+WgAwIBAgISA+XMxBpZ8QPRypKtzNXcAMCuMA0GCSqGSIb3DQEBCwUA
       MEoxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MSMwIQYDVQQD
       ExpMZXQncyBFbmNyeXB0IEF1dGhvcml0eSBYMzAeFw0xODAxMTkwMDMwMjFaFw0x
@@ -99,12 +98,12 @@ describe('DANE', function() {
       y/6AZMy11PrBQJ1Ogz6SxgwQkARCvgkgXRTjDKUUvDpH
     `);
 
-    assert(dane.verify(cert, rd.selector, rd.matchingType, rd.certificate));
-    assert(tlsa.verify(rr, cert, 'www.huque.com', 'tcp', 443));
-  });
+		assert(dane.verify(cert, rd.selector, rd.matchingType, rd.certificate));
+		assert(tlsa.verify(rr, cert, 'www.huque.com', 'tcp', 443));
+	});
 
-  it('should verify spki+sha256 cert (www.ietf.org)', async () => {
-    const cert = fromBase64(`
+	it('should verify spki+sha256 cert (www.ietf.org)', async () => {
+		const cert = fromBase64(`
       MIIFUTCCBDmgAwIBAgIIITAshaEP0OswDQYJKoZIhvcNAQELBQAwgcYxCzAJBgNV
       BAYTAlVTMRAwDgYDVQQIEwdBcml6b25hMRMwEQYDVQQHEwpTY290dHNkYWxlMSUw
       IwYDVQQKExxTdGFyZmllbGQgVGVjaG5vbG9naWVzLCBJbmMuMTMwMQYDVQQLEypo
@@ -136,23 +135,23 @@ describe('DANE', function() {
       WNyYOpbGqBfooA8nwwE20fpacX2i
     `);
 
-    // Hack for testing.
-    dns._allowInsecure = true;
+		// Hack for testing.
+		dns._allowInsecure = true;
 
-    const rrs = await dns.resolveTLSA('www.ietf.org', 'tcp', 443);
+		const rrs = await dns.resolveTLSA('www.ietf.org', 'tcp', 443);
 
-    assert(Array.isArray(rrs));
-    assert(rrs.length >= 1);
+		assert(Array.isArray(rrs));
+		assert(rrs.length >= 1);
 
-    let valid = false;
+		let valid = false;
 
-    for (const rr of rrs) {
-      if (dns.verifyTLSA(rr, cert)) {
-        valid = true;
-        break;
-      }
-    }
+		for (const rr of rrs) {
+			if (dns.verifyTLSA(rr, cert)) {
+				valid = true;
+				break;
+			}
+		}
 
-    assert(valid);
-  });
+		assert(valid);
+	});
 });

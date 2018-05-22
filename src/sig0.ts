@@ -10,7 +10,7 @@
 'use strict';
 
 import * as assert from "assert";
-import * as bio from "bufio";
+import * as bio from "@as-com/bufio";
 import {algHashes, EncAlg, HashAlg, QuestionClass, RecordType} from "./constants";
 import * as dnssec from "./dnssec";
 import {algToHash, hashToHash} from "./dnssec";
@@ -84,11 +84,11 @@ export function sign(msg: Buffer, key: Record<KEYRecord>, priv: Buffer, fudge: n
 	return bw.render();
 };
 
-export function verify(msg: Buffer, key: Record<KEYRecord>, verifier: Function) {
+export function verify(msg: Buffer, key: Record<KEYRecord>, verifier?: Function) {
 	// assert(Buffer.isBuffer(msg));
 	// assert(key instanceof Record);
-	assert(key.type === RecordType.KEY);
-	assert(verifier == null || typeof verifier === 'function');
+	// assert(key.type === RecordType.KEY);
+	// assert(verifier == null || typeof verifier === 'function');
 
 	const [pos, rr] = findSIG(msg);
 
@@ -139,8 +139,8 @@ export function verify(msg: Buffer, key: Record<KEYRecord>, verifier: Function) 
  * Helpers
  */
 
-function findSIG(msg) {
-	assert(Buffer.isBuffer(msg));
+function findSIG(msg: Buffer): [number, Record<SIGRecord> | null] {
+	// assert(Buffer.isBuffer(msg));
 
 	try {
 		return _findSIG(msg);
@@ -149,7 +149,7 @@ function findSIG(msg) {
 	}
 }
 
-function _findSIG(msg) {
+function _findSIG(msg): [number, Record<SIGRecord> | null] {
 	const br = bio.read(msg);
 
 	br.readU16BE();
@@ -217,7 +217,7 @@ function _findSIG(msg) {
 	if (rd.typeCovered !== 0)
 		return [-1, null];
 
-	return [offset, rr];
+	return [offset, rr as Record<SIGRecord>];
 }
 
 function removeSIG(msg) {

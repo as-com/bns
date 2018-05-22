@@ -13,7 +13,7 @@
 'use strict';
 
 import * as assert from "assert";
-import IP from "binet";
+import * as IP from "binet";
 import {sizeName} from "./encoding";
 import {Record, RecordType} from "./wire";
 
@@ -713,7 +713,7 @@ export function cookie() {
 }
 
 export function sortRandom<T>(items: T[]) {
-	assert(Array.isArray(items));
+	// assert(Array.isArray(items));
 
 	if (items.length <= 1)
 		return items;

@@ -8,7 +8,7 @@
 
 import * as assert from "assert";
 import * as EventEmitter from "events";
-import IP from "binet";
+import * as IP from "binet";
 import * as constants from "./constants";
 import {DNS_PORT} from "./constants";
 import * as dane from "./dane";
@@ -35,13 +35,13 @@ let conf = null;
  */
 
 class API extends EventEmitter {
-	private _create: Function;
-	private _options: any;
-	private _resolvers: Set<any>;
-	private _servers: string[];
-	private _onError: (err) => boolean;
-	private _onLog: (...args) => boolean;
-	private _allowInsecure: boolean;
+	_create: Function;
+	_options: any;
+	_resolvers: Set<any>;
+	_servers: string[];
+	_onError: (err) => boolean;
+	_onLog: (...args) => boolean;
+	_allowInsecure: boolean;
 
 	Resolver: (options) => API;
 	V4MAPPED: number;
@@ -84,7 +84,7 @@ class API extends EventEmitter {
 	constructor(create: Function, options) {
 		super();
 
-		assert(typeof create === 'function');
+		// assert(typeof create === 'function');
 
 		// Private
 		this._create = create;
@@ -204,8 +204,8 @@ class API extends EventEmitter {
 		return res;
 	}
 
-	async _query(name, type) {
-		assert(typeof name === 'string');
+	async _query(name: string, type: number) {
+		// assert(typeof name === 'string');
 		assert((type & 0xffff) === type);
 
 		const resolver = await this._create(this._options, this._servers);
@@ -221,9 +221,9 @@ class API extends EventEmitter {
 		}
 	}
 
-	async _lookup(name, type, secure, map) {
-		assert(typeof secure === 'boolean');
-		assert(typeof map === 'function');
+	async _lookup(name: string, type: number, secure: boolean, map: Function) {
+		// assert(typeof secure === 'boolean');
+		// assert(typeof map === 'function');
 
 		const res = await this._query(name, type);
 
@@ -684,10 +684,10 @@ class API extends EventEmitter {
 		});
 	}
 
-	async resolveTLSA(name, protocol, port, cert) {
+	async resolveTLSA(name: string, protocol: string, port: number, cert?: Buffer) {
 		const rrname = tlsa.encodeName(name, protocol, port);
 
-		assert(cert == null || Buffer.isBuffer(cert));
+		// assert(cert == null || Buffer.isBuffer(cert));
 
 		return this._resolveSecure(rrname, RecordType.TLSA, (rr) => {
 			const rd = rr.data;
@@ -824,7 +824,7 @@ class API extends EventEmitter {
 		});
 	}
 
-	static make(create, options) {
+	static make(create, options): API {
 		const keys = Object.getOwnPropertyNames(this.prototype);
 		const api = new this(create, options);
 

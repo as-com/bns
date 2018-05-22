@@ -10,7 +10,7 @@
 'use strict';
 
 import * as assert from "assert";
-import * as bio from "bufio";
+import * as bio from "@as-com/bufio";
 import {QuestionClass, RecordType, TSigAlg} from "./constants";
 import * as crypto from "./crypto";
 import {readNameBR, writeNameBW} from "./encoding";
@@ -27,7 +27,7 @@ const DEFAULT_FUDGE = 300;
  * TSIG
  */
 
-export function sign(msg: Buffer, sig: Record<TSIGRecord> | string, secret: Buffer, requestMAC, timersOnly: boolean) {
+export function sign(msg: Buffer, sig: Record<TSIGRecord> | string, secret: Buffer, requestMAC?: Buffer, timersOnly?: boolean) {
 	if (typeof sig === 'string') {
 		const alg = sig;
 		sig = new Record<TSIGRecord>();
@@ -45,14 +45,14 @@ export function sign(msg: Buffer, sig: Record<TSIGRecord> | string, secret: Buff
 	// assert(Buffer.isBuffer(msg));
 	assert(msg.length >= 12);
 	// assert(sig instanceof Record);
-	assert(sig.type === RecordType.TSIG);
+	// assert(sig.type === RecordType.TSIG);
 	// assert(Buffer.isBuffer(secret));
-	assert(requestMAC === null || Buffer.isBuffer(requestMAC));
+	// assert(requestMAC === null || Buffer.isBuffer(requestMAC));
 	// assert(typeof timersOnly === 'boolean');
 
 	const id = msg.readUInt16BE(0, true);
 	const rr = new Record();
-	const rd = sig.data.clone();
+	const rd = sig.data.clone() as TSIGRecord;
 
 	rr.name = '.';
 	rr.type = RecordType.TSIG;
@@ -139,7 +139,7 @@ export function verify(msg: Buffer, secret: Buffer, requestMAC: Buffer | null, t
  * Helpers
  */
 
-function findTSIG(msg: Buffer) {
+function findTSIG(msg: Buffer): [number, Record<TSIGRecord> | null] {
 	// assert(Buffer.isBuffer(msg));
 
 	try {
@@ -149,7 +149,7 @@ function findTSIG(msg: Buffer) {
 	}
 }
 
-function _findTSIG(msg) {
+function _findTSIG(msg): [number, Record<TSIGRecord> | null] {
 	const br = bio.read(msg);
 
 	br.readU16BE();
@@ -199,7 +199,7 @@ function _findTSIG(msg) {
 	}
 
 	const offset = br.offset;
-	const rr = Record.read<Record>(br);
+	const rr = Record.read<Record<TSIGRecord>>(br);
 
 	if (rr.name !== '.')
 		return [-1, null];

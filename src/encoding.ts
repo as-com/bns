@@ -14,8 +14,8 @@
 'use strict';
 
 import * as assert from "assert";
-import IP from "binet";
-import {EncodingError} from "bufio";
+import * as IP from "binet";
+import {EncodingError} from "@as-com/bufio";
 
 import {MAX_LABEL_SIZE, MAX_NAME_SIZE} from "./constants";
 

@@ -8,8 +8,8 @@
 
 import * as assert from "assert";
 import * as Path from "path";
-import fs from "bfile";
-import IP from "binet";
+import * as fs from "bfile";
+import * as IP from "binet";
 import * as encoding from "./encoding";
 import {AAAARecord, ARecord, PTRRecord, QuestionClass, Record, RecordType} from "./wire";
 import * as util from "./util";
@@ -168,9 +168,9 @@ class Hosts {
         return this.map.get(key);
     }
 
-    query(name, type) {
-        assert(typeof name === 'string');
-        assert((type & 0xffff) === type);
+	query(name: string, type: number) {
+		// assert(typeof name === 'string');
+		// assert((type & 0xffff) === type);
 
         const entry = this.lookup(name);
 

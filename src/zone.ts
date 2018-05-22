@@ -10,7 +10,7 @@
 'use strict';
 
 import * as assert from "assert";
-import fs from "bfile";
+import * as fs from "bfile";
 import {Code, RecordType} from "./constants";
 import * as util from "./util";
 import * as wire from "./wire";
@@ -474,8 +474,8 @@ function findLower(items, name) {
 	return items[i - 1];
 }
 
-function isWild(name) {
-	assert(typeof name === 'string');
+function isWild(name: string) {
+	// assert(typeof name === 'string');
 	if (name.length < 2)
 		return false;
 	return name[0] === '*' && name[1] === '.';
@@ -493,7 +493,7 @@ function convert(name: string, rr: Record) {
 	if (x.length < y.length)
 		return rr;
 
-	rr = rr.clone();
+	rr = rr.clone() as Record;
 
 	y[0] = x[x.length - y.length];
 

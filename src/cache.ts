@@ -10,7 +10,7 @@
 'use strict';
 
 import * as assert from "assert";
-import Heap from "bheep";
+import * as Heap from "bheep";
 import * as wire from "./wire";
 import {Message, Question} from "./wire";
 import * as util from "./util";
@@ -130,9 +130,9 @@ class Cache {
         return this;
     }
 
-    hit(qs, zone) {
-        assert(qs instanceof Question);
-        assert(typeof zone === 'string');
+	hit(qs: Question, zone: string) {
+		// assert(qs instanceof Question);
+		// assert(typeof zone === 'string');
 
         const id = this.hash(qs, zone);
         const entry = this.get(id);
@@ -148,7 +148,7 @@ class Cache {
             return null;
         }
 
-        const msg = Message.decode(entry.msg);
+		const msg = Message.decode<Message>(entry.msg);
         const diff = now - entry.time;
 
         assert(diff >= 0);

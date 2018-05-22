@@ -14,9 +14,9 @@
 'use strict';
 
 import * as assert from "assert";
-import fs from "bfile";
-import IP from "binet";
-import base32 from "bs32";
+import * as fs from "bfile";
+import * as IP from "binet";
+import * as base32 from "bs32";
 import {dirname, resolve} from "path";
 import * as encoding from "./encoding";
 import {

@@ -10,8 +10,8 @@
 'use strict';
 
 import * as assert from "assert";
-import fs from "bfile";
-import IP from "binet";
+import * as fs from "bfile";
+import * as IP from "binet";
 import Authority from "./authority";
 import {DNS_PORT} from "./constants";
 import * as dnssec from "./dnssec";

@@ -79,8 +79,8 @@ class StubResolver extends DNSResolver {
 		return this;
 	}
 
-	async resolve(qs) {
-		assert(qs instanceof Question);
+	async resolve(qs: Question) {
+		// assert(qs instanceof Question);
 
 		const {name, type} = qs;
 		const answer = this.hosts.query(name, type);

@@ -8,7 +8,7 @@
 
 import * as assert from "assert";
 import * as EventEmitter from "events";
-import IP from "binet";
+import * as IP from "binet";
 import {DNS_PORT, MAX_EDNS_SIZE, MAX_UDP_SIZE} from "../constants";
 import * as encoding from "../encoding";
 import {Client} from "../net";
@@ -294,10 +294,10 @@ class DNSResolver extends EventEmitter {
         query.unref();
 
         let {req} = query;
-        let res = null;
+		let res: Message;
 
         try {
-            res = Message.decode(msg);
+			res = Message.decode<Message>(msg);
         } catch (e) {
             this.log('Message %d failed deserialization (%s):', id, rinfo.address);
             this.log(e.stack);
@@ -343,7 +343,7 @@ class DNSResolver extends EventEmitter {
 			|| res.code === Code.SERVFAIL)
             && (!res.isEDNS() && req.isEDNS())) {
             // They don't like edns.
-            req = req.clone();
+			req = req.clone() as any; // TODO?????
             req.unsetEDNS();
 
             query.req = req;
@@ -385,9 +385,9 @@ class DNSResolver extends EventEmitter {
         query.resolve(res);
     }
 
-	async exchange(req, servers: IServer[]) {
-        assert(req instanceof Message);
-        assert(Array.isArray(servers));
+	async exchange(req: Message, servers: IServer[]) {
+		// assert(req instanceof Message);
+		// assert(Array.isArray(servers));
         assert(req.question.length > 0);
 
         const [qs] = req.question;
@@ -413,15 +413,15 @@ class DNSResolver extends EventEmitter {
 
         query.ref();
 
-        return new Promise((resolve, reject) => {
+		return new Promise<Message>((resolve, reject) => {
             query.resolve = resolve;
             query.reject = reject;
         });
     }
 
-	async query(qs, servers: IServer[]) {
-        assert(qs instanceof Question);
-        assert(Array.isArray(servers));
+	async query(qs: Question, servers: IServer[]) {
+		// assert(qs instanceof Question);
+		// assert(Array.isArray(servers));
 
         const req = new Message();
 		req.opcode = Opcode.QUERY;
@@ -465,10 +465,10 @@ export class Query {
 	req: Message;
 	index: number;
 	servers: IServer[];
-	resolve: Function;
+	resolve: (msg: Message) => void;
 	reject: Function;
 	attempts: number;
-	res: null;
+	res: Message;
 	server: any; // TODO
 	time: number;
 	timer: Timer;
@@ -505,9 +505,9 @@ export class Query {
         this.timer = null;
     }
 
-    getServer(index, tcp) {
+	getServer(index: number, tcp: boolean) {
         assert((index >>> 0) < this.servers.length);
-        assert(typeof tcp === 'boolean');
+		// assert(typeof tcp === 'boolean');
 
         const server = this.servers[index];
 
@@ -537,7 +537,7 @@ export class Query {
         };
     }
 
-    nextServer(tcp) {
+	nextServer(tcp: boolean) {
         assert(this.index < this.servers.length);
 
         this.index += 1;

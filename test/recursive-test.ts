@@ -3,9 +3,10 @@
 
 'use strict';
 
-const assert = require('./util/assert');
-const rdns = require('../lib/rdns');
-const {types, codes} = require('../lib/wire');
+import * as assert from "./util/assert";
+import rdns from "../lib/rdns";
+import {Code, RecordType} from "../lib/wire";
+
 
 const dnssecNames = [
   'dnssec-name-and-shame.com',
@@ -54,8 +55,8 @@ describe('Recursive', function() {
 
   for (const name of dnssecNames) {
     it(`should validate trust chain for ${name}`, async () => {
-      const res = await rdns.resolveRaw(name, types.A);
-      assert.strictEqual(res.code, codes.NOERROR);
+		const res = await rdns.resolveRaw(name, RecordType.A);
+		assert.strictEqual(res.code, Code.NOERROR);
       assert(res.answer.length > 0);
       assert(res.ad);
     });
@@ -63,8 +64,8 @@ describe('Recursive', function() {
 
   for (const name of nxNames) {
     it(`should validate NX proof for ${name}`, async () => {
-      const res = await rdns.resolveRaw(name, types.A);
-      assert.strictEqual(res.code, codes.NXDOMAIN);
+		const res = await rdns.resolveRaw(name, RecordType.A);
+		assert.strictEqual(res.code, Code.NXDOMAIN);
       assert(res.answer.length === 0);
       assert(res.ad);
     });
@@ -72,8 +73,8 @@ describe('Recursive', function() {
 
   for (const name of nodataNames) {
     it(`should validate NODATA proof for ${name}`, async () => {
-      const res = await rdns.resolveRaw(name, types.WKS);
-      assert.strictEqual(res.code, codes.NOERROR);
+		const res = await rdns.resolveRaw(name, RecordType.WKS);
+		assert.strictEqual(res.code, Code.NOERROR);
       assert(res.answer.length === 0);
       assert(res.ad);
     });
@@ -81,8 +82,8 @@ describe('Recursive', function() {
 
   for (const name of noDnssecNames) {
     it(`should fail to validate trust chain for ${name}`, async () => {
-      const res = await rdns.resolveRaw(name, types.A);
-      assert.strictEqual(res.code, codes.NOERROR);
+		const res = await rdns.resolveRaw(name, RecordType.A);
+		assert.strictEqual(res.code, Code.NOERROR);
       assert(res.answer.length > 0);
       assert(!res.ad);
     });
@@ -90,8 +91,8 @@ describe('Recursive', function() {
 
   for (const name of noNxNames) {
     it(`should fail to validate NX proof for ${name}`, async () => {
-      const res = await rdns.resolveRaw(name, types.A);
-      assert.strictEqual(res.code, codes.NXDOMAIN);
+		const res = await rdns.resolveRaw(name, RecordType.A);
+		assert.strictEqual(res.code, Code.NXDOMAIN);
       assert(res.answer.length === 0);
       assert(!res.ad);
     });
@@ -99,8 +100,8 @@ describe('Recursive', function() {
 
   for (const name of noNodataNames) {
     it(`should fail to validate NODATA proof for ${name}`, async () => {
-      const res = await rdns.resolveRaw(name, types.WKS);
-      assert.strictEqual(res.code, codes.NOERROR);
+		const res = await rdns.resolveRaw(name, RecordType.WKS);
+		assert.strictEqual(res.code, Code.NOERROR);
       assert(res.answer.length === 0);
       assert(!res.ad);
     });

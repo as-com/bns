@@ -13,7 +13,7 @@
 'use strict';
 
 import * as assert from "assert";
-import * as bio from "bufio";
+import * as bio from "@as-com/bufio";
 import {algHashes, EncAlg, HashAlg, KeyFlag, RecordType} from "./constants";
 import * as crypto from "./crypto";
 import {Hash} from "crypto";
@@ -392,10 +392,10 @@ export function signatureHash(sig, rrset) {
     return bw.render();
 };
 
-export function verifyDS(msg, ds, name) {
-    assert(msg instanceof Message);
-    assert(Array.isArray(ds));
-    assert(typeof name === 'string');
+export function verifyDS(msg: Message, ds: Record<DSRecord>[], name: string) {
+	// assert(msg instanceof Message);
+	// assert(Array.isArray(ds));
+	// assert(typeof name === 'string');
 
     if (ds.length === 0)
         return false;
@@ -406,7 +406,7 @@ export function verifyDS(msg, ds, name) {
 		if (rr.type !== RecordType.DNSKEY)
             continue;
 
-        const rd = rr.data;
+		const rd = rr.data as DNSKEYRecord;
 
 		if (rd.flags & KeyFlag.REVOKE)
             continue;
@@ -424,8 +424,8 @@ export function verifyDS(msg, ds, name) {
     const valid = new Map();
 
     for (const rr of ds) {
-        assert(rr instanceof Record);
-		assert(rr.type === RecordType.DS);
+		// assert(rr instanceof Record);
+		// assert(rr.type === RecordType.DS);
 
         const rd = rr.data;
         const dnskey = kskMap.get(rd.keyTag);

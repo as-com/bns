@@ -3,9 +3,10 @@
 
 'use strict';
 
-const assert = require('./util/assert');
-const constants = require('../lib/constants');
-const encoding = require('../lib/encoding');
+import * as assert from "./util/assert";
+import * as constants from "../src/constants";
+import * as encoding from "../src/encoding";
+
 const {RecordType} = constants;
 
 const array = [

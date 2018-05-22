@@ -8,9 +8,9 @@
 
 import * as assert from "assert";
 import * as EventEmitter from "events";
-import IP from "binet";
-import tcp from "btcp";
-import udp from "budp";
+import * as IP from "binet";
+import * as tcp from "btcp";
+import * as udp from "budp";
 import * as util from "./util";
 import * as dgram from "dgram";
 import * as net from "net";
@@ -592,7 +592,7 @@ export class Parser extends EventEmitter {
  * Helpers
  */
 
-function ensure4(host) {
+function ensure4(host: string) {
 	const ip = IP.toBuffer(host);
 
 	if (IP.isIPv4(ip))

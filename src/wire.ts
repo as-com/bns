@@ -13,10 +13,9 @@
 'use strict';
 
 import * as assert from "assert";
-import * as bio from "bufio";
-import {Struct} from "bufio";
-import "./struct";
-import IP from "binet";
+import * as bio from "@as-com/bufio";
+import {BufferReader, Struct} from "@as-com/bufio";
+import * as IP from "binet";
 import {
 	algHashes,
 	algToString,
@@ -177,8 +176,12 @@ class Message extends Struct {
 		this.trailing = DUMMY;
 	}
 
-	inject(msg) {
+	inject(msg: Struct): this {
 		assert(msg instanceof Message);
+		if (!(msg instanceof Message)) {
+			return;
+		}
+
 		this.id = msg.id;
 		this.flags = msg.flags;
 		this.opcode = msg.opcode;
@@ -568,7 +571,7 @@ class Message extends Struct {
 		return size;
 	}
 
-	write(bw, map) {
+	write(bw, map?): any {
 		bw.writeU16BE(this.id);
 
 		let bits = this.flags;
@@ -752,7 +755,7 @@ class Message extends Struct {
 		return out;
 	}
 
-	toString(ms, host, port) {
+	toString(ms?, host?, port?) {
 		let diff = -1;
 		let sec = -1;
 
@@ -2032,6 +2035,7 @@ class RecordData extends Struct {
 
 class UNKNOWNRecord extends RecordData {
 	data: Buffer;
+
 	constructor() {
 		super();
 		this.data = DUMMY;
@@ -2175,6 +2179,7 @@ class MDRecord extends RecordData {
 
 class MFRecord extends RecordData {
 	mf: string;
+
 	constructor() {
 		super();
 		this.mf = '.';
@@ -2287,7 +2292,7 @@ class SOARecord extends RecordData {
 		return size;
 	}
 
-	write(bw, map) {
+	write(bw, map?) {
 		writeNameBW(bw, this.ns, map);
 		writeNameBW(bw, this.mbox, map);
 		bw.writeU32BE(this.serial);
@@ -2320,6 +2325,7 @@ class SOARecord extends RecordData {
 
 class MBRecord extends RecordData {
 	mb: string;
+
 	constructor() {
 		super();
 		this.mb = '.';
@@ -2359,6 +2365,7 @@ class MBRecord extends RecordData {
 
 class MGRecord extends RecordData {
 	mg: string;
+
 	constructor() {
 		super();
 		this.mg = '.';
@@ -2398,6 +2405,7 @@ class MGRecord extends RecordData {
 
 class MRRecord extends RecordData {
 	mr: string;
+
 	constructor() {
 		super();
 		this.mr = '.';
@@ -2457,6 +2465,7 @@ class WKSRecord extends RecordData {
 	address: string;
 	protocol: number;
 	bitmap: Buffer;
+
 	constructor() {
 		super();
 		this.address = '0.0.0.0';
@@ -2508,6 +2517,7 @@ class WKSRecord extends RecordData {
 
 class PTRRecord extends RecordData {
 	ptr: string;
+
 	constructor() {
 		super();
 		this.ptr = '.';
@@ -2546,6 +2556,7 @@ class PTRRecord extends RecordData {
 class HINFORecord extends RecordData {
 	cpu: string;
 	os: string;
+
 	constructor() {
 		super();
 		this.cpu = '';
@@ -2587,6 +2598,7 @@ class HINFORecord extends RecordData {
 class MINFORecord extends RecordData {
 	rmail: string;
 	email: string;
+
 	constructor() {
 		super();
 		this.rmail = '.';
@@ -2633,6 +2645,7 @@ class MINFORecord extends RecordData {
 class MXRecord extends RecordData {
 	preference: number;
 	mx: string;
+
 	constructor() {
 		super();
 		this.preference = 0;
@@ -2673,6 +2686,7 @@ class MXRecord extends RecordData {
 
 class TXTRecord extends RecordData {
 	private txt: string[];
+
 	constructor() {
 		super();
 		this.txt = [];
@@ -2711,6 +2725,7 @@ class TXTRecord extends RecordData {
 class RPRecord extends RecordData {
 	mbox: string;
 	txt: string;
+
 	constructor() {
 		super();
 		this.mbox = '.';
@@ -2756,6 +2771,7 @@ class RPRecord extends RecordData {
 class AFSDBRecord extends RecordData {
 	subtype: number;
 	hostname: string;
+
 	constructor() {
 		super();
 		this.subtype = 0;
@@ -2796,6 +2812,7 @@ class AFSDBRecord extends RecordData {
 
 class X25Record extends RecordData {
 	psdnAddress: string;
+
 	constructor() {
 		super();
 		this.psdnAddress = '';
@@ -2829,6 +2846,7 @@ class X25Record extends RecordData {
 class ISDNRecord extends RecordData {
 	address: string;
 	sa: string;
+
 	constructor() {
 		super();
 		this.address = '';
@@ -2868,6 +2886,7 @@ class ISDNRecord extends RecordData {
 class RTRecord extends RecordData {
 	preference: number;
 	host: string;
+
 	constructor() {
 		super();
 		this.preference = 0;
@@ -2908,6 +2927,7 @@ class RTRecord extends RecordData {
 
 class NSAPRecord extends RecordData {
 	nsap: Buffer;
+
 	constructor() {
 		super();
 		this.nsap = DUMMY;
@@ -3376,6 +3396,7 @@ class LOCRecord extends RecordData {
 class NXTRecord extends RecordData {
 	nextDomain: string;
 	typeBitmap: Buffer;
+
 	constructor() {
 		super();
 		this.nextDomain = '.';
@@ -3432,6 +3453,7 @@ class NXTRecord extends RecordData {
 
 class EIDRecord extends RecordData {
 	endpoint: Buffer;
+
 	constructor() {
 		super();
 		this.endpoint = DUMMY;
@@ -3464,6 +3486,7 @@ class EIDRecord extends RecordData {
 
 class NIMLOCRecord extends RecordData {
 	locator: Buffer;
+
 	constructor() {
 		super();
 		this.locator = DUMMY;
@@ -3499,6 +3522,7 @@ class SRVRecord extends RecordData {
 	weight: number;
 	port: number;
 	target: string;
+
 	constructor() {
 		super();
 		this.priority = 0;
@@ -3647,6 +3671,7 @@ class NAPTRRecord extends RecordData {
 class KXRecord extends RecordData {
 	preference: number;
 	exchanger: string;
+
 	constructor() {
 		super();
 		this.preference = 0;
@@ -3690,6 +3715,7 @@ class CERTRecord extends RecordData {
 	keyTag: number;
 	algorithm: number;
 	certificate: Buffer;
+
 	constructor() {
 		super();
 		this.certType = 0;
@@ -3762,6 +3788,7 @@ class A6Record extends RecordData {
 	prefixLen: number;
 	address: string;
 	prefix: string;
+
 	constructor() {
 		super();
 		this.prefixLen = 0;
@@ -3922,6 +3949,7 @@ class OPTRecord extends RecordData {
 
 class APLRecord extends RecordData {
 	items: AP[];
+
 	constructor() {
 		super();
 		this.items = [];
@@ -3966,6 +3994,7 @@ class DSRecord extends RecordData {
 	algorithm: number;
 	digestType: number;
 	digest: Buffer;
+
 	constructor() {
 		super();
 		this.keyTag = 0;
@@ -4030,6 +4059,7 @@ class SSHFPRecord extends RecordData {
 	algorithm: number;
 	digestType: number;
 	fingerprint: Buffer;
+
 	constructor() {
 		super();
 		this.algorithm = 0;
@@ -4103,6 +4133,7 @@ class IPSECKEYRecord extends RecordData {
 	algorithm: number;
 	target: string;
 	publicKey: Buffer;
+
 	constructor() {
 		super();
 		this.precedence = 0;
@@ -4215,6 +4246,7 @@ class RRSIGRecord extends SIGRecord {
 class NSECRecord extends RecordData {
 	nextDomain: string;
 	typeBitmap: Buffer;
+
 	constructor() {
 		super();
 		this.nextDomain = '.';
@@ -4287,6 +4319,7 @@ class DNSKEYRecord extends KEYRecord {
 
 class DHCIDRecord extends RecordData {
 	digest: Buffer;
+
 	constructor() {
 		super();
 		this.digest = DUMMY;
@@ -4324,6 +4357,7 @@ class NSEC3Record extends RecordData {
 	salt: Buffer;
 	nextDomain: Buffer;
 	typeBitmap: Buffer;
+
 	constructor() {
 		super();
 		this.hash = 0;
@@ -4417,6 +4451,7 @@ class NSEC3PARAMRecord extends RecordData {
 	flags: number;
 	iterations: number;
 	salt: Buffer;
+
 	constructor() {
 		super();
 		this.hash = 0;
@@ -4485,6 +4520,7 @@ class TLSARecord extends RecordData {
 	selector: number;
 	matchingType: number;
 	certificate: Buffer;
+
 	constructor() {
 		super();
 		this.usage = 0;
@@ -4584,6 +4620,7 @@ class HIPRecord extends RecordData {
 	hit: Buffer;
 	publicKey: Buffer;
 	servers: string[];
+
 	constructor() {
 		super();
 		this.algorithm = 0;
@@ -4706,6 +4743,7 @@ class RKEYRecord extends KEYRecord {
 class TALINKRecord extends RecordData {
 	prevName: string;
 	nextName: string;
+
 	constructor() {
 		super();
 		this.prevName = '.';
@@ -4783,6 +4821,7 @@ class CDNSKEYRecord extends KEYRecord {
 
 class OPENPGPKEYRecord extends RecordData {
 	publicKey: Buffer;
+
 	constructor() {
 		super();
 		this.publicKey = DUMMY;
@@ -4817,6 +4856,7 @@ class CSYNCRecord extends RecordData {
 	serial: number;
 	flags: number;
 	typeBitmap: Buffer;
+
 	constructor() {
 		super();
 		this.serial = 0;
@@ -4885,6 +4925,7 @@ class SPFRecord extends TXTRecord {
 
 class UINFORecord extends RecordData {
 	uinfo: string;
+
 	constructor() {
 		super();
 		this.uinfo = '';
@@ -4917,6 +4958,7 @@ class UINFORecord extends RecordData {
 
 class UIDRecord extends RecordData {
 	uid: number;
+
 	constructor() {
 		super();
 		this.uid = 0;
@@ -4949,6 +4991,7 @@ class UIDRecord extends RecordData {
 
 class GIDRecord extends RecordData {
 	gid: number;
+
 	constructor() {
 		super();
 		this.gid = 0;
@@ -4998,6 +5041,7 @@ class UNSPECRecord extends UNKNOWNRecord {
 class NIDRecord extends RecordData {
 	preference: number;
 	nodeID: Buffer;
+
 	constructor() {
 		super();
 		this.preference = 0;
@@ -5034,6 +5078,7 @@ class NIDRecord extends RecordData {
 class L32Record extends RecordData {
 	preference: number;
 	locator32: Buffer;
+
 	constructor() {
 		super();
 		this.preference = 0;
@@ -5070,6 +5115,7 @@ class L32Record extends RecordData {
 class L64Record extends RecordData {
 	preference: number;
 	locator64: Buffer;
+
 	constructor() {
 		super();
 		this.preference = 0;
@@ -5106,6 +5152,7 @@ class L64Record extends RecordData {
 class LPRecord extends RecordData {
 	preference: number;
 	fqdn: string;
+
 	constructor() {
 		super();
 		this.preference = 0;
@@ -5147,6 +5194,7 @@ class LPRecord extends RecordData {
 
 class EUI48Record extends RecordData {
 	address: Buffer;
+
 	constructor() {
 		super();
 		this.address = DUMMY6;
@@ -5179,6 +5227,7 @@ class EUI48Record extends RecordData {
 
 class EUI64Record extends RecordData {
 	address: Buffer;
+
 	constructor() {
 		super();
 		this.address = DUMMY8;
@@ -5217,6 +5266,7 @@ class TKEYRecord extends RecordData {
 	error: number;
 	key: Buffer;
 	other: Buffer;
+
 	constructor() {
 		super();
 		this.algorithm = '.';
@@ -5286,6 +5336,7 @@ class TSIGRecord extends RecordData {
 	origID: number;
 	error: number;
 	other: Buffer;
+
 	constructor() {
 		super();
 		this.algorithm = '.';
@@ -5376,6 +5427,7 @@ class URIRecord extends RecordData {
 	priority: number;
 	weight: number;
 	target: string;
+
 	constructor() {
 		super();
 		this.priority = 0;
@@ -5416,6 +5468,7 @@ class CAARecord extends RecordData {
 	flag: number;
 	tag: string;
 	value: string;
+
 	constructor() {
 		super();
 		this.flag = 0;
@@ -5478,6 +5531,7 @@ class DOARecord extends RecordData {
 	location: number;
 	mediaType: string;
 	data: Buffer;
+
 	constructor() {
 		super();
 		this.enterprise = 0;
@@ -5529,6 +5583,7 @@ class TARecord extends RecordData {
 	algorithm: number;
 	digestType: number;
 	digest: Buffer;
+
 	constructor() {
 		super();
 		this.keyTag = 0;
@@ -5586,6 +5641,7 @@ class DLVRecord extends DSRecord {
 class Option extends Struct {
 	code: number;
 	option: OptionData;
+
 	constructor() {
 		super();
 		this.code = 0;
@@ -5741,6 +5797,7 @@ class OptionData extends Struct {
 
 class UNKNOWNOption extends OptionData {
 	data: Buffer;
+
 	constructor() {
 		super();
 		this.data = DUMMY;
@@ -5777,6 +5834,7 @@ class LLQOption extends OptionData {
 	error: number;
 	id: Buffer;
 	leaseLife: number;
+
 	constructor() {
 		super();
 		this.version = 0;
@@ -5821,6 +5879,7 @@ class LLQOption extends OptionData {
 
 class ULOption extends OptionData {
 	lease: number;
+
 	constructor() {
 		super();
 		this.lease = 0;
@@ -5853,6 +5912,7 @@ class ULOption extends OptionData {
 
 class NSIDOption extends OptionData {
 	nsid: Buffer;
+
 	constructor() {
 		super();
 		this.nsid = DUMMY;
@@ -5885,6 +5945,7 @@ class NSIDOption extends OptionData {
 
 class DAUOption extends OptionData {
 	algCode: Buffer;
+
 	constructor() {
 		super();
 		this.algCode = DUMMY;
@@ -5953,6 +6014,7 @@ class SUBNETOption extends OptionData {
 	sourceScope: number;
 	address: string;
 	data: Buffer;
+
 	constructor() {
 		super();
 		this.family = 1;
@@ -6029,6 +6091,7 @@ class SUBNETOption extends OptionData {
 
 class EXPIREOption extends OptionData {
 	expire: number;
+
 	constructor() {
 		super();
 		this.expire = 0;
@@ -6131,6 +6194,7 @@ class TCPKEEPALIVEOption extends OptionData {
 
 class PADDINGOption extends OptionData {
 	padding: Buffer;
+
 	constructor() {
 		super();
 		this.padding = DUMMY;
@@ -6202,6 +6266,7 @@ class CHAINOption extends OptionData {
 
 class KEYTAGOption extends OptionData {
 	private tags: number[];
+
 	constructor() {
 		super();
 		this.tags = [];
@@ -6236,6 +6301,7 @@ class KEYTAGOption extends OptionData {
 
 class LOCALOption extends OptionData {
 	data: Buffer;
+
 	constructor() {
 		super();
 		this.data = DUMMY;
@@ -6271,6 +6337,7 @@ class AP extends Struct {
 	prefix: number;
 	n: number;
 	afd: Buffer;
+
 	constructor() {
 		super();
 		this.family = 1;
@@ -6667,7 +6734,87 @@ function decodeData(type, data) {
 	return readData(type, bio.read(data));
 }
 
-function readData<T extends Struct>(type, br): T {
+function readData(type: RecordType.A, br: BufferReader): ARecord;
+function readData(type: RecordType.NS, br: BufferReader): NSRecord;
+function readData(type: RecordType.MD, br: BufferReader): MDRecord;
+function readData(type: RecordType.MF, br: BufferReader): MFRecord;
+function readData(type: RecordType.CNAME, br: BufferReader): CNAMERecord;
+function readData(type: RecordType.SOA, br: BufferReader): SOARecord;
+function readData(type: RecordType.MB, br: BufferReader): MBRecord;
+function readData(type: RecordType.MG, br: BufferReader): MGRecord;
+function readData(type: RecordType.MR, br: BufferReader): MRRecord;
+function readData(type: RecordType.NULL, br: BufferReader): NULLRecord;
+function readData(type: RecordType.WKS, br: BufferReader): WKSRecord;
+function readData(type: RecordType.PTR, br: BufferReader): PTRRecord;
+function readData(type: RecordType.HINFO, br: BufferReader): HINFORecord;
+function readData(type: RecordType.MINFO, br: BufferReader): MINFORecord;
+function readData(type: RecordType.MX, br: BufferReader): MXRecord;
+function readData(type: RecordType.TXT, br: BufferReader): TXTRecord;
+function readData(type: RecordType.RP, br: BufferReader): RPRecord;
+function readData(type: RecordType.AFSDB, br: BufferReader): AFSDBRecord;
+function readData(type: RecordType.X25, br: BufferReader): X25Record;
+function readData(type: RecordType.ISDN, br: BufferReader): ISDNRecord;
+function readData(type: RecordType.RT, br: BufferReader): RTRecord;
+function readData(type: RecordType.NSAP, br: BufferReader): NSAPRecord;
+function readData(type: RecordType.NSAPPTR, br: BufferReader): NSAPPTRRecord;
+function readData(type: RecordType.SIG, br: BufferReader): SIGRecord;
+function readData(type: RecordType.KEY, br: BufferReader): KEYRecord;
+function readData(type: RecordType.PX, br: BufferReader): PXRecord;
+function readData(type: RecordType.GPOS, br: BufferReader): GPOSRecord;
+function readData(type: RecordType.AAAA, br: BufferReader): AAAARecord;
+function readData(type: RecordType.LOC, br: BufferReader): LOCRecord;
+function readData(type: RecordType.NXT, br: BufferReader): NXTRecord;
+function readData(type: RecordType.EID, br: BufferReader): EIDRecord;
+function readData(type: RecordType.NIMLOC, br: BufferReader): NIMLOCRecord;
+function readData(type: RecordType.SRV, br: BufferReader): SRVRecord;
+function readData(type: RecordType.ATMA, br: BufferReader): ATMARecord;
+function readData(type: RecordType.NAPTR, br: BufferReader): NAPTRRecord;
+function readData(type: RecordType.KX, br: BufferReader): KXRecord;
+function readData(type: RecordType.CERT, br: BufferReader): CERTRecord;
+function readData(type: RecordType.A6, br: BufferReader): A6Record;
+function readData(type: RecordType.DNAME, br: BufferReader): DNAMERecord;
+function readData(type: RecordType.OPT, br: BufferReader): OPTRecord;
+function readData(type: RecordType.APL, br: BufferReader): APLRecord;
+function readData(type: RecordType.DS, br: BufferReader): DSRecord;
+function readData(type: RecordType.SSHFP, br: BufferReader): SSHFPRecord;
+function readData(type: RecordType.IPSECKEY, br: BufferReader): IPSECKEYRecord;
+function readData(type: RecordType.RRSIG, br: BufferReader): RRSIGRecord;
+function readData(type: RecordType.NSEC, br: BufferReader): NSECRecord;
+function readData(type: RecordType.DNSKEY, br: BufferReader): DNSKEYRecord;
+function readData(type: RecordType.DHCID, br: BufferReader): DHCIDRecord;
+function readData(type: RecordType.NSEC3, br: BufferReader): NSEC3Record;
+function readData(type: RecordType.NSEC3PARAM, br: BufferReader): NSEC3PARAMRecord;
+function readData(type: RecordType.TLSA, br: BufferReader): TLSARecord;
+function readData(type: RecordType.SMIMEA, br: BufferReader): SMIMEARecord;
+function readData(type: RecordType.HIP, br: BufferReader): HIPRecord;
+function readData(type: RecordType.NINFO, br: BufferReader): NINFORecord;
+function readData(type: RecordType.RKEY, br: BufferReader): RKEYRecord;
+function readData(type: RecordType.TALINK, br: BufferReader): TALINKRecord;
+function readData(type: RecordType.CDS, br: BufferReader): CDSRecord;
+function readData(type: RecordType.CDNSKEY, br: BufferReader): CDNSKEYRecord;
+function readData(type: RecordType.OPENPGPKEY, br: BufferReader): OPENPGPKEYRecord;
+function readData(type: RecordType.CSYNC, br: BufferReader): CSYNCRecord;
+function readData(type: RecordType.SPF, br: BufferReader): SPFRecord;
+function readData(type: RecordType.UINFO, br: BufferReader): UINFORecord;
+function readData(type: RecordType.UID, br: BufferReader): UIDRecord;
+function readData(type: RecordType.GID, br: BufferReader): GIDRecord;
+function readData(type: RecordType.UNSPEC, br: BufferReader): UNSPECRecord;
+function readData(type: RecordType.NID, br: BufferReader): NIDRecord;
+function readData(type: RecordType.L32, br: BufferReader): L32Record;
+function readData(type: RecordType.L64, br: BufferReader): L64Record;
+function readData(type: RecordType.LP, br: BufferReader): LPRecord;
+function readData(type: RecordType.EUI48, br: BufferReader): EUI48Record;
+function readData(type: RecordType.EUI64, br: BufferReader): EUI64Record;
+function readData(type: RecordType.TKEY, br: BufferReader): TKEYRecord;
+function readData(type: RecordType.TSIG, br: BufferReader): TSIGRecord;
+function readData(type: RecordType.URI, br: BufferReader): URIRecord;
+function readData(type: RecordType.CAA, br: BufferReader): CAARecord;
+function readData(type: RecordType.AVC, br: BufferReader): AVCRecord;
+function readData(type: RecordType.DOA, br: BufferReader): DOARecord;
+function readData(type: RecordType.TA, br: BufferReader): TARecord;
+function readData(type: RecordType.DLV, br: BufferReader): DLVRecord;
+function readData(type: RecordType, br: BufferReader): RecordData;
+function readData(type: RecordType, br: BufferReader): RecordData {
 	assert((type & 0xffff) === type);
 
 	switch (type) {
