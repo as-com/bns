@@ -13,7 +13,7 @@
 'use strict';
 
 import * as assert from "assert";
-import bio from "bufio";
+import * as bio from "bufio";
 import {algHashes, EncAlg, HashAlg, KeyFlag, RecordType} from "./constants";
 import * as crypto from "./crypto";
 import {packName, readName} from "./encoding";
@@ -25,7 +25,7 @@ import {DNSKEYRecord, DSRecord, Message, Record, RRSIGRecord} from "./wire";
  * Constants
  */
 
-const algToHash = {
+export const algToHash = {
 	[EncAlg.RSAMD5]: crypto.md5, // Deprecated in RFC 6725
 	[EncAlg.RSASHA1]: crypto.sha1,
 	[EncAlg.RSASHA1NSEC3SHA1]: crypto.sha1,
@@ -36,7 +36,7 @@ const algToHash = {
 	[EncAlg.ED25519]: crypto.sha256
 };
 
-const hashToHash = {
+export const hashToHash = {
 	[HashAlg.SHA1]: crypto.sha1,
 	[HashAlg.SHA256]: crypto.sha256,
 	[HashAlg.GOST94]: null,
@@ -654,5 +654,3 @@ export {KeyFlag};
 export {EncAlg};
 export {HashAlg};
 export {algHashes};
-export {algToHash};
-export {hashToHash};

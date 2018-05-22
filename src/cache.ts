@@ -176,7 +176,7 @@ class Cache {
  * CacheEntry
  */
 
-class CacheEntry {
+export class CacheEntry {
 	msg: Buffer;
 	time: number;
 	ttl: number;

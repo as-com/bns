@@ -9,7 +9,7 @@
 import * as assert from "assert";
 import * as crypto from "crypto";
 import {Hash} from "crypto";
-import bio from "bufio";
+import * as bio from "bufio";
 import elliptic from "elliptic";
 import Signature from "elliptic/lib/elliptic/ec/signature";
 

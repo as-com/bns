@@ -10,7 +10,7 @@
 'use strict';
 
 import * as assert from "assert";
-import bio from "bufio";
+import * as bio from "bufio";
 import {QuestionClass, RecordType, TSigAlg} from "./constants";
 import * as crypto from "./crypto";
 import {readNameBR, writeNameBW} from "./encoding";

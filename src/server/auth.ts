@@ -8,13 +8,15 @@
 
 import DNSServer from "./dns";
 import Zone from "../zone";
+import DNSResolver from "../resolver/dns";
+import {Message} from "../wire";
 
 /**
  * AuthServer
  * @extends EventEmitter
  */
 
-class AuthServer extends DNSServer {
+class AuthServer extends DNSServer<DNSResolver> {
 	zone: Zone;
 	file: string;
 	ra: boolean;
@@ -42,7 +44,7 @@ class AuthServer extends DNSServer {
         return this;
     }
 
-    async resolve(req, rinfo) {
+	async resolve(req, rinfo): Promise<Message> {
         const [qs] = req.question;
         const {name, type} = qs;
         return this.zone.resolve(name, type);

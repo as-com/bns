@@ -460,7 +460,7 @@ class DNSResolver extends EventEmitter {
  * Query
  */
 
-class Query {
+export class Query {
 	id: number;
 	req: Message;
 	index: number;

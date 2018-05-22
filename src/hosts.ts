@@ -331,7 +331,7 @@ class Hosts {
  * HostEntry
  */
 
-class HostEntry {
+export class HostEntry {
 	name: string;
 	inet4: string;
 	inet6: string;

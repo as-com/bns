@@ -24,7 +24,7 @@ export function createKey(pub: Buffer) {
 	// assert(Buffer.isBuffer(pub));
 	assert(pub.length === 33);
 
-	const rr = new Record();
+	const rr = new Record<KEYRecord>();
 	const rd = new KEYRecord();
 
 	rr.name = '.';

@@ -17,13 +17,13 @@ import * as crypto from "./crypto";
 import * as dane from "./dane";
 import {DaneMatchingType, DaneSelector, DaneUsage} from "./dane";
 import * as util from "./util";
-import {QuestionClass, Record, RecordType, SMIMEARecord} from "./wire";
+import {QuestionClass, Record, RecordData, RecordType, SMIMEARecord} from "./wire";
 
 /*
  * SMIMEA
  */
 
-export function create(cert: Buffer, name: string, email: string, options: any = {}) {
+export function create(cert: Buffer, name: string, email: string, options: any = {}): Record<RecordData> {
 	// assert(Buffer.isBuffer(cert));
 	assert(options && typeof options === 'object');
 

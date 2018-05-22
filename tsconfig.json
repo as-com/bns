@@ -2,12 +2,15 @@
 	"compilerOptions": {
 		"module": "commonjs",
 		"moduleResolution": "node",
-		"allowJs": true,
-		"checkJs": true,
 		"target": "es6",
 		"sourceMap": true,
-		"declaration": true
+		"declaration": true,
+		"outDir": "lib",
+		"importHelpers": true
 	},
+	"include": [
+		"src/**/*"
+	],
 	"exclude": [
 		"node_modules"
 	]

@@ -10,7 +10,7 @@
 'use strict';
 
 import * as assert from "assert";
-import bio from "bufio";
+import * as bio from "bufio";
 import {algHashes, EncAlg, HashAlg, QuestionClass, RecordType} from "./constants";
 import * as dnssec from "./dnssec";
 import {algToHash, hashToHash} from "./dnssec";

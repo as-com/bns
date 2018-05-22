@@ -24,7 +24,7 @@ const hasIPv6 = IP.getPublic('ipv6').length > 0;
  * @extends EventEmitter
  */
 
-class Base extends EventEmitter {
+export class Base extends EventEmitter {
 	inet6: boolean;
 	tcp: boolean;
 	socket: dgram.Socket;
@@ -321,7 +321,7 @@ class Server extends Base {
  * @extends EventEmitter
  */
 
-class TCPSocket extends EventEmitter {
+export class TCPSocket extends EventEmitter {
 	parent: Server;
 	socket: net.Socket;
 	ctimer: Timer;
@@ -538,7 +538,7 @@ class TCPSocket extends EventEmitter {
  * @extends EventEmitter
  */
 
-class Parser extends EventEmitter {
+export class Parser extends EventEmitter {
 	pending: Buffer[];
 	total: number;
 	waiting: number;

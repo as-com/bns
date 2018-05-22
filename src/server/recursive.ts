@@ -7,7 +7,9 @@
 'use strict';
 
 import DNSServer from "./dns";
+import Cache from "../cache"
 import RecursiveResolver from "../resolver/recursive";
+import Hints from "../hints";
 
 /**
  * RecursiveServer
@@ -24,7 +26,7 @@ class RecursiveServer extends DNSServer<RecursiveResolver> {
 		this.initOptions(options);
 	}
 
-	get cache() {
+	get cache(): Cache {
 		return this.resolver.cache;
 	}
 
@@ -32,7 +34,7 @@ class RecursiveServer extends DNSServer<RecursiveResolver> {
 		this.resolver.cache = value;
 	}
 
-	get hints() {
+	get hints(): Hints {
 		return this.resolver.hints;
 	}
 

@@ -8,6 +8,8 @@
 
 import DNSServer from "./dns";
 import StubResolver from "../resolver/stub";
+import Hosts from "../hosts";
+import ResolvConf from "../resolvconf";
 
 /**
  * StubServer
@@ -33,7 +35,7 @@ class StubServer extends DNSServer<StubResolver> {
 		return this;
 	}
 
-	get conf() {
+	get conf(): ResolvConf {
 		return this.resolver.conf;
 	}
 
@@ -41,7 +43,7 @@ class StubServer extends DNSServer<StubResolver> {
 		this.resolver.conf = value;
 	}
 
-	get hosts() {
+	get hosts(): Hosts {
 		return this.resolver.hosts;
 	}
 

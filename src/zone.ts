@@ -301,7 +301,7 @@ class Zone {
  * RecordMap
  */
 
-class RecordMap {
+export class RecordMap {
 	rrs: Map<RecordType, Record[]>;
 	sigs: Map<number, Record[]>;
 
@@ -379,7 +379,7 @@ class RecordMap {
  * NameList
  */
 
-class NameList {
+export class NameList {
 	private names: any[];
 	constructor() {
 		this.names = [];
