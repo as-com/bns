@@ -1,7 +1,8 @@
 {
-	"name": "bns",
-	"version": "0.0.13",
-	"description": "DNS bike-shed",
+	"name": "@as-com/bns",
+	"version": "0.0.14",
+	"description": "DNS bike-shed -- Now with types!",
+	"private": false,
 	"keywords": [
 		"bns",
 		"dns",
@@ -9,12 +10,12 @@
 		"tcp"
 	],
 	"license": "MIT",
-	"repository": "git://github.com/bcoin-org/bns.git",
-	"homepage": "https://github.com/bcoin-org/bns",
+	"repository": "git://github.com/as-com/bns.git",
+	"homepage": "https://github.com/as-com/bns",
 	"bugs": {
-		"url": "https://github.com/bcoin-org/bns/issues"
+		"url": "https://github.com/as-com/bns/issues"
 	},
-	"author": "Christopher Jeffrey <chjjeffrey@gmail.com>",
+	"author": "Andrew Sun <me@andrewsun.com>",
 	"main": "./lib/bns.js",
 	"bin": {
 		"dig.js": "./bin/dig.js",
