@@ -13,13 +13,20 @@ import * as assert from "assert";
 import Authority from "../authority";
 import Cache from "../cache";
 import {DNS_PORT} from "../constants";
-import DNSResolver from "./dns";
+import DNSResolver, {IDNSResolverOptions} from "./dns";
 import * as dnssec from "../dnssec";
 import * as encoding from "../encoding";
 import Hints from "../hints";
 import * as nsec3 from "../nsec3";
 import {equal, extractSet, filterSet, hasAll, hasType, isName, isSubdomain, random, randomItem} from "../util";
 import {Code, DNSKEYRecord, DSRecord, Message, Question, Record, RecordType, typeToString} from "../wire";
+
+export interface IRecursiveResolverOptions extends IDNSResolverOptions {
+	cacheSize?: number;
+	maxReferrals?: number;
+	cache?: Cache;
+	hints?: Hints
+}
 
 /**
  * RecursiveResolver
@@ -30,7 +37,8 @@ class RecursiveResolver extends DNSResolver {
 	cache: Cache;
 	hints: Hints;
 	maxReferrals: number;
-    constructor(options) {
+
+	constructor(options?: IRecursiveResolverOptions) {
         super(options);
 
         this.rd = false;
@@ -41,14 +49,14 @@ class RecursiveResolver extends DNSResolver {
         this.initOptions(options);
     }
 
-    initOptions(options) {
+	initOptions(options?: IRecursiveResolverOptions) {
         if (options == null)
             return this;
 
         this.parseOptions(options);
 
         if (options.cache != null) {
-            assert(options.cache instanceof Cache);
+			// assert(options.cache instanceof Cache);
             this.cache = options.cache;
         }
 
@@ -526,7 +534,7 @@ class RecursiveResolver extends DNSResolver {
         return rc.toAnswer();
     }
 
-    async lookup(name, type) {
+	async lookup(name: string, type: RecordType | keyof RecordType) {
         const qs = new Question(name, type);
         return this.resolve(qs);
     }

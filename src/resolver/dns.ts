@@ -11,12 +11,20 @@ import * as EventEmitter from "events";
 import * as IP from "binet";
 import {DNS_PORT, MAX_EDNS_SIZE, MAX_UDP_SIZE} from "../constants";
 import * as encoding from "../encoding";
-import {Client} from "../net";
+import {Client, IClientOptions} from "../net";
 
 import * as util from "../util";
 import {Code, Message, Opcode, Question, RecordType} from "../wire";
 import {IServer} from "../server";
 import Timer = NodeJS.Timer;
+
+export interface IDNSResolverOptions extends IClientOptions {
+	dnssec?: boolean;
+	ednsSize?: number;
+	edns?: boolean;
+	maxTimeout?: number;
+	maxAttempts?: number;
+}
 
 /**
  * DNSResolver
@@ -37,7 +45,7 @@ class DNSResolver extends EventEmitter {
 	ednsSize: number;
 	dnssec: boolean;
 
-    constructor(options) {
+	constructor(options?: IDNSResolverOptions) {
         super();
 
         this.socket = new Client(options);
@@ -82,14 +90,14 @@ class DNSResolver extends EventEmitter {
         });
     }
 
-    parseOptions(options) {
+	parseOptions(options?: IDNSResolverOptions) {
         if (options == null)
             return this;
 
         assert(options && typeof options === 'object');
 
         if (options.forceTCP != null) {
-            assert(typeof options.forceTCP === 'boolean');
+			// assert(typeof options.forceTCP === 'boolean');
             this.forceTCP = options.forceTCP;
         }
 
@@ -104,7 +112,7 @@ class DNSResolver extends EventEmitter {
         }
 
         if (options.edns != null) {
-            assert(typeof options.edns === 'boolean');
+			// assert(typeof options.edns === 'boolean');
             this.edns = options.edns;
         }
 
@@ -116,7 +124,7 @@ class DNSResolver extends EventEmitter {
         }
 
         if (options.dnssec != null) {
-            assert(typeof options.dnssec === 'boolean');
+			// assert(typeof options.dnssec === 'boolean');
             this.dnssec = options.dnssec;
             if (this.dnssec)
                 this.edns = true;

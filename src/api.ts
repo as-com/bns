@@ -551,11 +551,11 @@ class API extends EventEmitter {
 		}
 	}
 
-	async lookup(name, options: any = {}) {
+	async lookup(name: string | null, options: any = {}) {
 		if (typeof options === 'number')
 			options = {family: options};
 
-		assert(name == null || typeof name === 'string');
+		// assert(name == null || typeof name === 'string');
 		assert(options && typeof options === 'object');
 
 		const family = options.family >>> 0;

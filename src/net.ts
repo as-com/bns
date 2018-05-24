@@ -19,6 +19,16 @@ import Timer = NodeJS.Timer;
 
 const hasIPv6 = IP.getPublic('ipv6').length > 0;
 
+export interface IBaseOptions {
+	forceTCP?: boolean;
+	tcp?: boolean;
+	type?: "udp6" | "udp4";
+	inet6?: boolean;
+	reuseAddr?: boolean;
+	recvBufferSize?: number;
+	sendBufferSize?: number;
+}
+
 /**
  * Base
  * @extends EventEmitter
@@ -36,7 +46,7 @@ export class Base extends EventEmitter {
 	 * @param {Function?} handler
 	 */
 
-	constructor(options) {
+	constructor(options?: IBaseOptions) {
 		super();
 
 		const opt = normalize(options);
@@ -48,12 +58,12 @@ export class Base extends EventEmitter {
 
 		if (options && typeof options === 'object') {
 			if (options.tcp != null) {
-				assert(typeof options.tcp === 'boolean');
+				// assert(typeof options.tcp === 'boolean');
 				this.tcp = options.tcp;
 			}
 
 			if (options.forceTCP != null) {
-				assert(typeof options.forceTCP === 'boolean');
+				// assert(typeof options.forceTCP === 'boolean');
 				if (options.forceTCP)
 					this.tcp = true;
 			}
@@ -197,6 +207,9 @@ export class Base extends EventEmitter {
 	}
 }
 
+export interface IClientOptions extends IBaseOptions {
+}
+
 /**
  * Client
  * @extends EventEmitter
@@ -209,7 +222,7 @@ class Client extends Base {
 	 * @param {Function?} handler
 	 */
 
-	constructor(options) {
+	constructor(options?: IClientOptions) {
 		super(options);
 		this.socket.unref();
 	}
@@ -623,15 +636,7 @@ interface INormalized {
 	sendBufferSize?: number;
 }
 
-function normalize(options: ("udp6" | "udp4") |
-	{
-		type: "udp6" | "udp4",
-		inet6: boolean,
-		reuseAddr: boolean,
-		recvBufferSize: number,
-		sendBufferSize: number
-	}
-): INormalized {
+function normalize(options: ("udp6" | "udp4") | IBaseOptions): INormalized {
 	let type: "udp6" | "udp4" = hasIPv6 ? 'udp6' : 'udp4';
 
 	if (options == null)
