@@ -74,7 +74,7 @@ export function sign(rr: Record<SSHFPRecord>, key: Buffer) {
 	rd.fingerprint = _hash;
 
 	return rr;
-};
+}
 
 export function verify(rr: Record<SSHFPRecord>, key: Buffer) {
 	// assert(rr instanceof Record);
@@ -83,7 +83,7 @@ export function verify(rr: Record<SSHFPRecord>, key: Buffer) {
 	const rd = rr.data;
 
 	return validate(key, rd.digestType, rd.fingerprint);
-};
+}
 
 /*
  * Expose

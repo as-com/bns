@@ -66,7 +66,7 @@ export function create(cert: Buffer, name: string, email: string, options: any =
 	rd.certificate = hash;
 
 	return rr;
-};
+}
 
 export function verify(rr: Record<SMIMEARecord>, cert: Buffer, name?: string, email?: string) {
 	// assert(rr instanceof Record);
@@ -80,14 +80,14 @@ export function verify(rr: Record<SMIMEARecord>, cert: Buffer, name?: string, em
 	}
 
 	return dane.verify(cert, rd.selector, rd.matchingType, rd.certificate);
-};
+}
 
 export function verifyName(rr: Record<SMIMEARecord>, name: string, email: string) {
 	// assert(rr instanceof Record);
 	assert(rr.type === RecordType.SMIMEA);
 	const encoded = encodeName(name, email);
 	return util.equal(rr.name, encoded);
-};
+}
 
 export function encodeName(name: string, email: string) {
 	assert(util.isName(name));

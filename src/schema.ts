@@ -984,7 +984,6 @@ function readJSON(wire, rd, type, value) {
 			try {
 				return IP.normalize(value);
 			} catch (e) {
-				;
 			}
 
 			if (!encoding.isName(value))

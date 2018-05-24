@@ -24,27 +24,27 @@ import {MAX_LABEL_SIZE, MAX_NAME_SIZE} from "./constants";
  */
 
 const ASCII = [
-    ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-    ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-    ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-    ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-    ' ', '!', '"', '#', '$', '%', '&', '\'',
-    '(', ')', '*', '+', ',', '-', '.', '/',
-    '0', '1', '2', '3', '4', '5', '6', '7',
-    '8', '9', ':', ';', '<', '=', '>', '?',
-    '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
-    'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
-    'X', 'Y', 'Z', '[', '\\', ']', '^', '_',
-    '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
-    'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-    'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
-    'x', 'y', 'z', '{', '|', '}', '~', ' '
+	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+	' ', '!', '"', '#', '$', '%', '&', '\'',
+	'(', ')', '*', '+', ',', '-', '.', '/',
+	'0', '1', '2', '3', '4', '5', '6', '7',
+	'8', '9', ':', ';', '<', '=', '>', '?',
+	'@', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
+	'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+	'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
+	'X', 'Y', 'Z', '[', '\\', ']', '^', '_',
+	'`', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+	'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+	'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
+	'x', 'y', 'z', '{', '|', '}', '~', ' '
 ];
 
 const HEX = [
-    '0', '1', '2', '3', '4', '5', '6', '7',
-    '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+	'0', '1', '2', '3', '4', '5', '6', '7',
+	'8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
 ];
 
 const POOL1 = Buffer.allocUnsafe(MAX_NAME_SIZE * 4);
@@ -57,1067 +57,1067 @@ const DUMMY = Buffer.alloc(0);
 
 export function sizeName(name, map, cmp?) {
 	const [off] = writeName(null, name, 0, map, cmp);
-    return off;
-};
+	return off;
+}
 
 export function writeName(data, name, off, map, cmp) {
-    if (data == null)
-        data = null;
+	if (data == null)
+		data = null;
 
-    if (map == null)
-        map = null;
+	if (map == null)
+		map = null;
 
-    if (cmp == null)
-        cmp = map != null;
+	if (cmp == null)
+		cmp = map != null;
 
-    assert(data === null || Buffer.isBuffer(data));
-    assert(typeof name === 'string');
-    assert((off >>> 0) === off);
-    assert(map === null || (map instanceof Map));
-    assert(typeof cmp === 'boolean');
+	assert(data === null || Buffer.isBuffer(data));
+	assert(typeof name === 'string');
+	assert((off >>> 0) === off);
+	assert(map === null || (map instanceof Map));
+	assert(typeof cmp === 'boolean');
 
-    let nl = name.length;
+	let nl = name.length;
 
-    if (nl === 0 || name[nl - 1] !== '.')
-        throw new EncodingError(0, 'No dot');
+	if (nl === 0 || name[nl - 1] !== '.')
+		throw new EncodingError(0, 'No dot');
 
-    if (nl > MAX_NAME_SIZE * 4)
-        throw new EncodingError(0, 'Name too large');
+	if (nl > MAX_NAME_SIZE * 4)
+		throw new EncodingError(0, 'Name too large');
 
-    const n = POOL1;
+	const n = POOL1;
 
 	if (n.write(name, undefined, undefined, 'ascii') !== nl)
-        throw new EncodingError(0, 'Invalid string');
+		throw new EncodingError(0, 'Invalid string');
 
-    let pos = -1;
-    let ptr = -1;
-    let begin = 0;
-    let escaped = false;
-    let fresh = true;
-    let labels = 0;
+	let pos = -1;
+	let ptr = -1;
+	let begin = 0;
+	let escaped = false;
+	let fresh = true;
+	let labels = 0;
 
-    for (let i = 0; i < nl; i++) {
-        if (n[i] === 0x5c /*\\*/) {
-            for (let j = i; j < nl - 1; j++)
-                n[j] = n[j + 1];
+	for (let i = 0; i < nl; i++) {
+		if (n[i] === 0x5c /*\\*/) {
+			for (let j = i; j < nl - 1; j++)
+				n[j] = n[j + 1];
 
-            nl -= 1;
+			nl -= 1;
 
-            if (isDigits(n, i, nl)) {
-                n[i] = toByte(n, i);
-                for (let j = i + 1; j < nl - 2; j++)
-                    n[j] = n[j + 2];
-                nl -= 2;
-            }
+			if (isDigits(n, i, nl)) {
+				n[i] = toByte(n, i);
+				for (let j = i + 1; j < nl - 2; j++)
+					n[j] = n[j + 2];
+				nl -= 2;
+			}
 
-            escaped = n[i] === 0x2e;
-            fresh = false;
+			escaped = n[i] === 0x2e;
+			fresh = false;
 
-            continue;
-        }
+			continue;
+		}
 
-        if (n[i] === 0x2e /*.*/) {
-            if (i > 0 && n[i - 1] === 0x2e /*.*/ && !escaped)
-                throw new EncodingError(off, 'Multiple dots');
+		if (n[i] === 0x2e /*.*/) {
+			if (i > 0 && n[i - 1] === 0x2e /*.*/ && !escaped)
+				throw new EncodingError(off, 'Multiple dots');
 
-            const size = i - begin;
+			const size = i - begin;
 
-            if (size > MAX_LABEL_SIZE)
-                throw new EncodingError(off, 'Maximum label size exceeded');
+			if (size > MAX_LABEL_SIZE)
+				throw new EncodingError(off, 'Maximum label size exceeded');
 
-            if (data) {
-                if (off + 1 > data.length)
-                    throw new EncodingError(off, 'EOF');
-                data[off] = size;
-            }
+			if (data) {
+				if (off + 1 > data.length)
+					throw new EncodingError(off, 'EOF');
+				data[off] = size;
+			}
 
-            if (cmp && !fresh) {
-                name = n.toString('ascii', 0, nl);
-                fresh = true;
-            }
+			if (cmp && !fresh) {
+				name = n.toString('ascii', 0, nl);
+				fresh = true;
+			}
 
-            if (map) {
-                const s = name.substring(begin);
-                if (s !== '.') {
-                    const p = map.get(s);
-                    if (p == null) {
-                        if (off < (2 << 13))
-                            map.set(s, off);
-                    } else {
-                        if (cmp && ptr === -1) {
-                            ptr = p;
-                            pos = off;
-                            break;
-                        }
-                    }
-                }
-            }
+			if (map) {
+				const s = name.substring(begin);
+				if (s !== '.') {
+					const p = map.get(s);
+					if (p == null) {
+						if (off < (2 << 13))
+							map.set(s, off);
+					} else {
+						if (cmp && ptr === -1) {
+							ptr = p;
+							pos = off;
+							break;
+						}
+					}
+				}
+			}
 
-            off += 1;
+			off += 1;
 
-            if (data) {
-                if (off + size > data.length)
-                    throw new EncodingError(off, 'EOF');
-                assert(n.copy(data, off, begin, i) === size);
-            }
+			if (data) {
+				if (off + size > data.length)
+					throw new EncodingError(off, 'EOF');
+				assert(n.copy(data, off, begin, i) === size);
+			}
 
-            off += size;
+			off += size;
 
-            labels += 1;
-            begin = i + 1;
-        }
+			labels += 1;
+			begin = i + 1;
+		}
 
-        escaped = false;
-    }
+		escaped = false;
+	}
 
-    if (nl > MAX_NAME_SIZE)
-        throw new EncodingError(off, 'Maximum name size exceeded');
+	if (nl > MAX_NAME_SIZE)
+		throw new EncodingError(off, 'Maximum name size exceeded');
 
-    if (nl === 1 && n[0] === 0x2e /*.*/)
-        return [off, labels];
+	if (nl === 1 && n[0] === 0x2e /*.*/)
+		return [off, labels];
 
-    if (ptr !== -1) {
-        off = pos;
+	if (ptr !== -1) {
+		off = pos;
 
-        if (data) {
-            if (off + 2 > data.length)
-                throw new EncodingError(off, 'EOF');
-            data.writeUInt16BE(ptr ^ 0xc000, off, true);
-        }
+		if (data) {
+			if (off + 2 > data.length)
+				throw new EncodingError(off, 'EOF');
+			data.writeUInt16BE(ptr ^ 0xc000, off, true);
+		}
 
-        off += 2;
+		off += 2;
 
-        return [off, labels];
-    }
+		return [off, labels];
+	}
 
-    if (data) {
-        if (off + 1 > data.length)
-            throw new EncodingError(off, 'EOF');
-        data[off] = 0;
-    }
+	if (data) {
+		if (off + 1 > data.length)
+			throw new EncodingError(off, 'EOF');
+		data[off] = 0;
+	}
 
-    off += 1;
+	off += 1;
 
-    return [off, labels];
-};
+	return [off, labels];
+}
 
 export function readName(data, off): [number, string] {
-    assert(Buffer.isBuffer(data));
-    assert((off >>> 0) === off);
+	assert(Buffer.isBuffer(data));
+	assert((off >>> 0) === off);
 
-    let name = '';
-    let res = 0;
-    let max = MAX_NAME_SIZE;
-    let ptr = 0;
+	let name = '';
+	let res = 0;
+	let max = MAX_NAME_SIZE;
+	let ptr = 0;
 
-    for (; ;) {
-        if (off >= data.length)
-            throw new EncodingError(off, 'EOF');
+	for (; ;) {
+		if (off >= data.length)
+			throw new EncodingError(off, 'EOF');
 
-        const c = data[off];
+		const c = data[off];
 
-        off += 1;
+		off += 1;
 
-        if (c === 0x00)
-            break;
+		if (c === 0x00)
+			break;
 
-        switch (c & 0xc0) {
-            case 0x00: {
-                if (c > MAX_LABEL_SIZE)
-                    throw new EncodingError(off, 'Maximum label size exceeded');
+		switch (c & 0xc0) {
+			case 0x00: {
+				if (c > MAX_LABEL_SIZE)
+					throw new EncodingError(off, 'Maximum label size exceeded');
 
-                if (off + c > data.length)
-                    throw new EncodingError(off, 'EOF');
+				if (off + c > data.length)
+					throw new EncodingError(off, 'EOF');
 
-                if (name.length + c + 1 > max)
-                    throw new EncodingError(off, 'Maximum name length exceeded');
+				if (name.length + c + 1 > max)
+					throw new EncodingError(off, 'Maximum name length exceeded');
 
-                for (let j = off; j < off + c; j++) {
-                    const b = data[j];
+				for (let j = off; j < off + c; j++) {
+					const b = data[j];
 
-                    switch (b) {
-                        case 0x2e /*.*/
-                        :
-                        case 0x28 /*(*/
-                        :
-                        case 0x29 /*)*/
-                        :
-                        case 0x3b /*;*/
-                        :
-                        case 0x20 /* */
-                        :
-                        case 0x40 /*@*/
-                        :
-                        case 0x22 /*"*/
-                        :
-                        case 0x5c /*\\*/
-                        : {
-                            name += '\\' + ASCII[b];
-                            max += 1;
-                            break;
-                        }
-                        default: {
-                            if (b < 0x20 || b > 0x7e) {
-                                name += '\\' + toDDD(b);
-                                max += 3;
-                            } else {
-                                name += ASCII[b];
-                            }
-                            break;
-                        }
-                    }
-                }
+					switch (b) {
+						case 0x2e /*.*/
+						:
+						case 0x28 /*(*/
+						:
+						case 0x29 /*)*/
+						:
+						case 0x3b /*;*/
+						:
+						case 0x20 /* */
+						:
+						case 0x40 /*@*/
+						:
+						case 0x22 /*"*/
+						:
+						case 0x5c /*\\*/
+						: {
+							name += '\\' + ASCII[b];
+							max += 1;
+							break;
+						}
+						default: {
+							if (b < 0x20 || b > 0x7e) {
+								name += '\\' + toDDD(b);
+								max += 3;
+							} else {
+								name += ASCII[b];
+							}
+							break;
+						}
+					}
+				}
 
-                name += '.';
-                off += c;
+				name += '.';
+				off += c;
 
-                break;
-            }
+				break;
+			}
 
-            case 0xc0: {
-                if (off >= data.length)
-                    throw new EncodingError(off, 'EOF');
+			case 0xc0: {
+				if (off >= data.length)
+					throw new EncodingError(off, 'EOF');
 
-                const c1 = data[off];
+				const c1 = data[off];
 
-                off += 1;
+				off += 1;
 
-                if (ptr === 0)
-                    res = off;
+				if (ptr === 0)
+					res = off;
 
-                ptr += 1;
+				ptr += 1;
 
-                if (ptr > 10)
-                    throw new EncodingError(off, 'Too many pointers');
+				if (ptr > 10)
+					throw new EncodingError(off, 'Too many pointers');
 
-                off = ((c ^ 0xc0) << 8) | c1;
+				off = ((c ^ 0xc0) << 8) | c1;
 
-                break;
-            }
+				break;
+			}
 
-            default: {
-                throw new EncodingError(off, 'Invalid byte');
-            }
-        }
-    }
+			default: {
+				throw new EncodingError(off, 'Invalid byte');
+			}
+		}
+	}
 
-    if (ptr === 0)
-        res = off;
+	if (ptr === 0)
+		res = off;
 
-    if (name.length === 0)
-        name = '.';
+	if (name.length === 0)
+		name = '.';
 
-    assert(name.length <= max);
+	assert(name.length <= max);
 
-    return [res, name];
-};
+	return [res, name];
+}
 
 export function writeNameBW(bw, name, map?, cmp?) {
-    assert(bw);
-    const {data, offset} = bw;
-    const [off, labels] =
+	assert(bw);
+	const {data, offset} = bw;
+	const [off, labels] =
 		writeName(data, name, offset, map, cmp);
-    bw.offset = off;
-    return labels;
-};
+	bw.offset = off;
+	return labels;
+}
 
 export function readNameBR(br) {
-    assert(br);
+	assert(br);
 	const [off, name] = readName(br.data, br.offset);
-    br.offset = off;
-    return name;
-};
+	br.offset = off;
+	return name;
+}
 
 export function packName(name) {
 	const size = sizeName(name, null, false);
-    const data = Buffer.allocUnsafe(size);
+	const data = Buffer.allocUnsafe(size);
 	writeName(data, name, 0, null, false);
-    return data;
-};
+	return data;
+}
 
 export function unpackName(data) {
 	const [, name] = readName(data, 0);
-    return name;
-};
+	return name;
+}
 
 export function isName(name) {
-    assert(typeof name === 'string');
+	assert(typeof name === 'string');
 
-    let nl = name.length;
+	let nl = name.length;
 
-    if (nl === 0 || name[nl - 1] !== '.')
-        return false;
+	if (nl === 0 || name[nl - 1] !== '.')
+		return false;
 
-    if (nl > MAX_NAME_SIZE * 4)
-        return false;
+	if (nl > MAX_NAME_SIZE * 4)
+		return false;
 
-    const n = POOL1;
+	const n = POOL1;
 
 	if (n.write(name, undefined, undefined, 'ascii') !== nl)
-        return false;
+		return false;
 
-    let escaped = false;
-    let begin = 0;
+	let escaped = false;
+	let begin = 0;
 
-    for (let i = 0; i < nl; i++) {
-        if (n[i] === 0x5c /*\\*/) {
-            for (let j = i; j < nl - 1; j++)
-                n[j] = n[j + 1];
+	for (let i = 0; i < nl; i++) {
+		if (n[i] === 0x5c /*\\*/) {
+			for (let j = i; j < nl - 1; j++)
+				n[j] = n[j + 1];
 
-            nl -= 1;
+			nl -= 1;
 
-            if (isDigits(n, i, nl)) {
-                n[i] = toByte(n, i);
+			if (isDigits(n, i, nl)) {
+				n[i] = toByte(n, i);
 
-                for (let j = i + 1; j < nl - 2; j++)
-                    n[j] = n[j + 2];
+				for (let j = i + 1; j < nl - 2; j++)
+					n[j] = n[j + 2];
 
-                nl -= 2;
+				nl -= 2;
 
-                if (n[i] >= 0x20 && n[i] <= 0x7e)
-                    return false;
-            } else {
-                switch (n[i]) {
-                    case 0x2e /*.*/
-                    :
-                    case 0x28 /*(*/
-                    :
-                    case 0x29 /*)*/
-                    :
-                    case 0x3b /*;*/
-                    :
-                    case 0x20 /* */
-                    :
-                    case 0x40 /*@*/
-                    :
-                    case 0x22 /*"*/
-                    :
-                    case 0x5c /*\\*/
-                    : {
-                        break;
-                    }
-                    default:
-                        return false;
-                }
-            }
+				if (n[i] >= 0x20 && n[i] <= 0x7e)
+					return false;
+			} else {
+				switch (n[i]) {
+					case 0x2e /*.*/
+					:
+					case 0x28 /*(*/
+					:
+					case 0x29 /*)*/
+					:
+					case 0x3b /*;*/
+					:
+					case 0x20 /* */
+					:
+					case 0x40 /*@*/
+					:
+					case 0x22 /*"*/
+					:
+					case 0x5c /*\\*/
+					: {
+						break;
+					}
+					default:
+						return false;
+				}
+			}
 
-            escaped = n[i] === 0x2e;
+			escaped = n[i] === 0x2e;
 
-            continue;
-        }
+			continue;
+		}
 
-        switch (n[i]) {
-            case 0x28 /*(*/
-            :
-            case 0x29 /*)*/
-            :
-            case 0x3b /*;*/
-            :
-            case 0x20 /* */
-            :
-            case 0x40 /*@*/
-            :
-            case 0x22 /*"*/
-            :
-            case 0x5c /*\\*/
-            : {
-                return false;
-            }
-            default:
-                if (n[i] < 0x20 || n[i] > 0x7e)
-                    return false;
-                break;
-        }
+		switch (n[i]) {
+			case 0x28 /*(*/
+			:
+			case 0x29 /*)*/
+			:
+			case 0x3b /*;*/
+			:
+			case 0x20 /* */
+			:
+			case 0x40 /*@*/
+			:
+			case 0x22 /*"*/
+			:
+			case 0x5c /*\\*/
+			: {
+				return false;
+			}
+			default:
+				if (n[i] < 0x20 || n[i] > 0x7e)
+					return false;
+				break;
+		}
 
-        if (n[i] === 0x2e /*.*/) {
-            if (i > 0 && n[i - 1] === 0x2e /*.*/ && !escaped)
-                return false;
+		if (n[i] === 0x2e /*.*/) {
+			if (i > 0 && n[i - 1] === 0x2e /*.*/ && !escaped)
+				return false;
 
-            const size = i - begin;
+			const size = i - begin;
 
-            if (size > MAX_LABEL_SIZE)
-                return false;
+			if (size > MAX_LABEL_SIZE)
+				return false;
 
-            begin = i + 1;
-        }
+			begin = i + 1;
+		}
 
-        escaped = false;
-    }
+		escaped = false;
+	}
 
-    if (nl > MAX_NAME_SIZE)
-        return false;
+	if (nl > MAX_NAME_SIZE)
+		return false;
 
-    return true;
-};
+	return true;
+}
 
 export function toName(name, enc) {
-    if (enc == null)
-        enc = 'utf8';
+	if (enc == null)
+		enc = 'utf8';
 
-    assert(typeof enc === 'string');
+	assert(typeof enc === 'string');
 
-    if (Buffer.isBuffer(name)) {
-        if (name.length + 1 > MAX_NAME_SIZE)
-            throw new EncodingError(0, 'Name too large');
+	if (Buffer.isBuffer(name)) {
+		if (name.length + 1 > MAX_NAME_SIZE)
+			throw new EncodingError(0, 'Name too large');
 
-        name = name.toString('hex');
-        enc = 'hex';
-    }
+		name = name.toString('hex');
+		enc = 'hex';
+	}
 
-    assert(typeof name === 'string');
+	assert(typeof name === 'string');
 
 	let str = _escapeString(name, false, enc);
 
-    if (str.length === 0 || str[str.length - 1] !== '.')
-        str += '.';
+	if (str.length === 0 || str[str.length - 1] !== '.')
+		str += '.';
 
-    const buf = POOL2;
+	const buf = POOL2;
 	const [len] = writeName(buf, str, 0, null, false);
 
-    if (len >= buf.length)
-        throw new EncodingError(0, 'Name too large');
+	if (len >= buf.length)
+		throw new EncodingError(0, 'Name too large');
 
-    const data = buf.slice(0, len);
+	const data = buf.slice(0, len);
 
 	return readName(data, 0)[1];
-};
+}
 
 export function fromName(name, enc) {
-    if (enc == null)
-        enc = 'utf8';
+	if (enc == null)
+		enc = 'utf8';
 
 	assert(isName(name));
-    assert(typeof enc === 'string');
+	assert(typeof enc === 'string');
 
 	return _unescapeString(name, false, enc);
-};
+}
 
 export function sizeRawString(str) {
 	return writeRawString(null, str, 0);
-};
+}
 
 export function writeRawString(data, str, off) {
-    if (data == null)
-        data = null;
+	if (data == null)
+		data = null;
 
-    assert(data === null || Buffer.isBuffer(data));
-    assert(typeof str === 'string');
-    assert((off >>> 0) === off);
+	assert(data === null || Buffer.isBuffer(data));
+	assert(typeof str === 'string');
+	assert((off >>> 0) === off);
 
-    let sl = str.length;
+	let sl = str.length;
 
-    if (sl > MAX_NAME_SIZE * 4)
-        throw new EncodingError(0, 'String too large');
+	if (sl > MAX_NAME_SIZE * 4)
+		throw new EncodingError(0, 'String too large');
 
-    const s = POOL1;
+	const s = POOL1;
 
 	if (s.write(str, undefined, undefined, 'ascii') !== sl)
-        throw new EncodingError(0, 'Invalid string');
+		throw new EncodingError(0, 'Invalid string');
 
-    for (let i = 0; i < sl; i++) {
-        if (s[i] === 0x5c /*\\*/) {
-            for (let j = i; j < sl - 1; j++)
-                s[j] = s[j + 1];
+	for (let i = 0; i < sl; i++) {
+		if (s[i] === 0x5c /*\\*/) {
+			for (let j = i; j < sl - 1; j++)
+				s[j] = s[j + 1];
 
-            sl -= 1;
+			sl -= 1;
 
-            if (isDigits(s, i, sl)) {
-                s[i] = toByte(s, i);
-                for (let j = i + 1; j < sl - 2; j++)
-                    s[j] = s[j + 2];
-                sl -= 2;
-            }
-        }
+			if (isDigits(s, i, sl)) {
+				s[i] = toByte(s, i);
+				for (let j = i + 1; j < sl - 2; j++)
+					s[j] = s[j + 2];
+				sl -= 2;
+			}
+		}
 
-        if (data) {
-            if (off + 1 > data.length)
-                throw new EncodingError(off, 'EOF');
-            data[off] = s[i];
-        }
+		if (data) {
+			if (off + 1 > data.length)
+				throw new EncodingError(off, 'EOF');
+			data[off] = s[i];
+		}
 
-        off += 1;
-    }
+		off += 1;
+	}
 
-    if (sl > MAX_NAME_SIZE)
-        throw new EncodingError(off, 'Maximum string size exceeded');
+	if (sl > MAX_NAME_SIZE)
+		throw new EncodingError(off, 'Maximum string size exceeded');
 
-    return off;
-};
+	return off;
+}
 
 export function readRawString(data, off, len, nsp) {
-    if (nsp == null)
-        nsp = false;
+	if (nsp == null)
+		nsp = false;
 
-    assert(Buffer.isBuffer(data));
-    assert((off >>> 0) === off);
-    assert((len >>> 0) === len);
-    assert(typeof nsp === 'boolean');
+	assert(Buffer.isBuffer(data));
+	assert((off >>> 0) === off);
+	assert((len >>> 0) === len);
+	assert(typeof nsp === 'boolean');
 
-    if (len > MAX_NAME_SIZE)
-        throw new EncodingError(off, 'Maximum string size exceeded');
+	if (len > MAX_NAME_SIZE)
+		throw new EncodingError(off, 'Maximum string size exceeded');
 
-    if (off + len > data.length)
-        throw new EncodingError(off, 'EOF');
+	if (off + len > data.length)
+		throw new EncodingError(off, 'EOF');
 
-    const SPACE = 0x20 + (nsp ? 1 : 0);
-    const start = off;
-    const end = off + len;
+	const SPACE = 0x20 + (nsp ? 1 : 0);
+	const start = off;
+	const end = off + len;
 
-    let str = '';
+	let str = '';
 
-    for (let i = start; i < end; i++) {
-        const b = data[i];
+	for (let i = start; i < end; i++) {
+		const b = data[i];
 
-        switch (b) {
-            case 0x22 /*"*/
-            :
-            case 0x5c /*\\*/
-            :
-                str += '\\' + ASCII[b];
-                break;
-            default:
-                if (b < SPACE || b > 0x7e)
-                    str += '\\' + toDDD(b);
-                else
-                    str += ASCII[b];
-                break;
-        }
-    }
+		switch (b) {
+			case 0x22 /*"*/
+			:
+			case 0x5c /*\\*/
+			:
+				str += '\\' + ASCII[b];
+				break;
+			default:
+				if (b < SPACE || b > 0x7e)
+					str += '\\' + toDDD(b);
+				else
+					str += ASCII[b];
+				break;
+		}
+	}
 
-    return [end, str];
-};
+	return [end, str];
+}
 
 export function packRawString(str) {
 	const size = sizeRawString(str);
-    const data = Buffer.allocUnsafe(size);
+	const data = Buffer.allocUnsafe(size);
 	writeRawString(data, str, 0);
-    return data;
-};
+	return data;
+}
 
 export function unpackRawString(data, nsp) {
-    assert(data);
+	assert(data);
 	const [, str] = readRawString(data, 0, data.length, nsp);
-    return str;
-};
+	return str;
+}
 
 export function writeRawStringBW(bw, str) {
-    assert(bw);
-    const {data, offset} = bw;
+	assert(bw);
+	const {data, offset} = bw;
 	bw.offset = writeRawString(data, str, offset);
-    return bw;
-};
+	return bw;
+}
 
 export function readRawStringBR(br, len, nsp?) {
-    assert(br);
+	assert(br);
 	const [off, str] = readRawString(br.data, br.offset, len, nsp);
-    br.offset = off;
-    return str;
-};
+	br.offset = off;
+	return str;
+}
 
 export function sizeString(str) {
 	return writeString(null, str, 0);
-};
+}
 
 export function writeString(data, str, off) {
-    if (data == null)
-        data = null;
+	if (data == null)
+		data = null;
 
-    assert(data === null || Buffer.isBuffer(data));
-    assert(typeof str === 'string');
-    assert((off >>> 0) === off);
+	assert(data === null || Buffer.isBuffer(data));
+	assert(typeof str === 'string');
+	assert((off >>> 0) === off);
 
-    const start = off;
+	const start = off;
 
-    if (data) {
-        if (off + 1 > data.length)
-            throw new EncodingError(off, 'EOF');
-        data[off] = 0;
-    }
+	if (data) {
+		if (off + 1 > data.length)
+			throw new EncodingError(off, 'EOF');
+		data[off] = 0;
+	}
 
-    off += 1;
+	off += 1;
 
 	const offset = writeRawString(data, str, off);
-    const size = offset - off;
+	const size = offset - off;
 
-    if (data)
-        data[start] = size;
+	if (data)
+		data[start] = size;
 
-    off += size;
+	off += size;
 
-    return off;
-};
+	return off;
+}
 
 export function readString(data, off, nsp) {
-    assert(Buffer.isBuffer(data));
-    assert((off >>> 0) === off);
+	assert(Buffer.isBuffer(data));
+	assert((off >>> 0) === off);
 
-    if (off + 1 > data.length)
-        throw new EncodingError(off, 'EOF');
+	if (off + 1 > data.length)
+		throw new EncodingError(off, 'EOF');
 
-    const len = data[off];
+	const len = data[off];
 
-    off += 1;
+	off += 1;
 
 	return readRawString(data, off, len, nsp);
-};
+}
 
 export function packString(str) {
 	const size = sizeString(str);
-    const data = Buffer.allocUnsafe(size);
+	const data = Buffer.allocUnsafe(size);
 	writeString(data, str, 0);
-    return data;
-};
+	return data;
+}
 
 export function unpackString(data, nsp) {
 	const [, str] = readString(data, 0, nsp);
-    return str;
-};
+	return str;
+}
 
 export function isString(str, nsp) {
-    if (nsp == null)
-        nsp = false;
+	if (nsp == null)
+		nsp = false;
 
-    assert(typeof str === 'string');
-    assert(typeof nsp === 'boolean');
+	assert(typeof str === 'string');
+	assert(typeof nsp === 'boolean');
 
-    let sl = str.length;
+	let sl = str.length;
 
-    if (sl > MAX_NAME_SIZE * 4)
-        return false;
+	if (sl > MAX_NAME_SIZE * 4)
+		return false;
 
-    const SPACE = 0x20 + (nsp ? 1 : 0);
-    const s = POOL1;
+	const SPACE = 0x20 + (nsp ? 1 : 0);
+	const s = POOL1;
 
 	if (s.write(str, undefined, undefined, 'ascii') !== sl)
-        return false;
+		return false;
 
-    for (let i = 0; i < sl; i++) {
-        if (s[i] === 0x5c /*\\*/) {
-            for (let j = i; j < sl - 1; j++)
-                s[j] = s[j + 1];
+	for (let i = 0; i < sl; i++) {
+		if (s[i] === 0x5c /*\\*/) {
+			for (let j = i; j < sl - 1; j++)
+				s[j] = s[j + 1];
 
-            sl -= 1;
+			sl -= 1;
 
-            if (isDigits(s, i, sl)) {
-                s[i] = toByte(s, i);
+			if (isDigits(s, i, sl)) {
+				s[i] = toByte(s, i);
 
-                for (let j = i + 1; j < sl - 2; j++)
-                    s[j] = s[j + 2];
+				for (let j = i + 1; j < sl - 2; j++)
+					s[j] = s[j + 2];
 
-                sl -= 2;
+				sl -= 2;
 
-                if (s[i] >= SPACE && s[i] <= 0x7e)
-                    return false;
-            } else {
-                switch (s[i]) {
-                    case 0x22 /*"*/
-                    :
-                    case 0x5c /*\\*/
-                    :
-                        break;
-                    default:
-                        return false;
-                }
-            }
+				if (s[i] >= SPACE && s[i] <= 0x7e)
+					return false;
+			} else {
+				switch (s[i]) {
+					case 0x22 /*"*/
+					:
+					case 0x5c /*\\*/
+					:
+						break;
+					default:
+						return false;
+				}
+			}
 
-            continue;
-        }
+			continue;
+		}
 
-        switch (s[i]) {
-            case 0x22 /*"*/
-            :
-            case 0x5c /*\\*/
-            :
-                return false;
-            default:
-                if (s[i] < SPACE || s[i] > 0x7e)
-                    return false;
-                break;
-        }
-    }
+		switch (s[i]) {
+			case 0x22 /*"*/
+			:
+			case 0x5c /*\\*/
+			:
+				return false;
+			default:
+				if (s[i] < SPACE || s[i] > 0x7e)
+					return false;
+				break;
+		}
+	}
 
-    if (sl > MAX_NAME_SIZE)
-        return false;
+	if (sl > MAX_NAME_SIZE)
+		return false;
 
-    return true;
-};
+	return true;
+}
 
 export function _escapeString(str, nsp, enc) {
-    if (nsp == null)
-        nsp = false;
+	if (nsp == null)
+		nsp = false;
 
-    if (enc == null)
-        enc = 'utf8';
+	if (enc == null)
+		enc = 'utf8';
 
-    assert(typeof nsp === 'boolean');
+	assert(typeof nsp === 'boolean');
 
-    let buf, len;
+	let buf, len;
 
-    if (Buffer.isBuffer(str)) {
-        buf = str;
-        len = buf.length;
+	if (Buffer.isBuffer(str)) {
+		buf = str;
+		len = buf.length;
 
-        if (len > MAX_NAME_SIZE)
-            throw new EncodingError(0, 'String too large');
-    } else {
-        assert(typeof str === 'string');
-        assert(typeof enc === 'string');
+		if (len > MAX_NAME_SIZE)
+			throw new EncodingError(0, 'String too large');
+	} else {
+		assert(typeof str === 'string');
+		assert(typeof enc === 'string');
 
-        buf = POOL2;
-        len = buf.write(str, enc);
+		buf = POOL2;
+		len = buf.write(str, enc);
 
-        if (len >= buf.length)
-            throw new EncodingError(0, 'String too large');
-    }
+		if (len >= buf.length)
+			throw new EncodingError(0, 'String too large');
+	}
 
 	return readRawString(buf, 0, len, nsp)[1];
-};
+}
 
 export function toString(str, nsp, enc) {
 	return _escapeString(str, nsp, enc);
-};
+}
 
 export function _unescapeString(str, nsp, enc) {
-    if (nsp == null)
-        nsp = false;
+	if (nsp == null)
+		nsp = false;
 
-    if (enc == null)
-        enc = 'utf8';
+	if (enc == null)
+		enc = 'utf8';
 
-    assert(typeof str === 'string');
-    assert(typeof enc === 'string');
+	assert(typeof str === 'string');
+	assert(typeof enc === 'string');
 
-    const buf = POOL2;
+	const buf = POOL2;
 	const len = writeRawString(buf, str, 0);
 
-    if (enc === 'buffer')
-        return Buffer.from(buf.slice(0, len));
+	if (enc === 'buffer')
+		return Buffer.from(buf.slice(0, len));
 
-    return buf.toString(enc, 0, len);
-};
+	return buf.toString(enc, 0, len);
+}
 
 export function fromString(str, nsp, enc) {
 	assert(isString(str, nsp));
 	return _unescapeString(str, nsp, enc);
-};
+}
 
 export function writeStringBW(bw, str) {
-    assert(bw && typeof bw === 'object');
-    const {data, offset} = bw;
+	assert(bw && typeof bw === 'object');
+	const {data, offset} = bw;
 	bw.offset = writeString(data, str, offset);
-    return bw;
-};
+	return bw;
+}
 
 export function readStringBR(br, nsp?) {
-    assert(br && typeof br === 'object');
+	assert(br && typeof br === 'object');
 	const [off, str] = readString(br.data, br.offset, nsp);
-    br.offset = off;
-    return str;
-};
+	br.offset = off;
+	return str;
+}
 
 export function writeIP(bw, str, size) {
-    return IP.writeBW(bw, str, size);
-};
+	return IP.writeBW(bw, str, size);
+}
 
 export function readIP(br, size) {
-    return IP.readBR(br, size);
-};
+	return IP.readBR(br, size);
+}
 
-export function reverse(addr) {
-    const ip = IP.toBuffer(addr);
+export function reverse(addr: string) {
+	const ip = IP.toBuffer(addr);
 
-    let name = '';
-    let i = 15;
+	let name = '';
+	let i = 15;
 
-    if (IP.isIPv4(ip)) {
-        for (; i >= 12; i--) {
-            const ch = ip[i];
-            name += ch.toString(10);
-            name += '.';
-        }
+	if (IP.isIPv4(ip)) {
+		for (; i >= 12; i--) {
+			const ch = ip[i];
+			name += ch.toString(10);
+			name += '.';
+		}
 
-        return `${name}in-addr.arpa.`;
-    }
+		return `${name}in-addr.arpa.`;
+	}
 
-    for (; i >= 0; i--) {
-        const ch = ip[i];
-        name += HEX[ch & 0x0f];
-        name += '.';
-        name += HEX[ch >>> 4];
-        name += '.';
-    }
+	for (; i >= 0; i--) {
+		const ch = ip[i];
+		name += HEX[ch & 0x0f];
+		name += '.';
+		name += HEX[ch >>> 4];
+		name += '.';
+	}
 
-    return `${name}ip6.arpa.`;
-};
+	return `${name}ip6.arpa.`;
+}
 
 export function toBitmap(types) {
-    assert(Array.isArray(types));
+	assert(Array.isArray(types));
 
-    if (types.length === 0)
-        return Buffer.allocUnsafe(0);
+	if (types.length === 0)
+		return Buffer.allocUnsafe(0);
 
-    if (types.length > 32 * 256)
-        throw new Error('Too many types for bitmap.');
+	if (types.length > 32 * 256)
+		throw new Error('Too many types for bitmap.');
 
-    let max = 0;
+	let max = 0;
 
-    for (const type of types) {
-        assert((type & 0xffff) === type);
+	for (const type of types) {
+		assert((type & 0xffff) === type);
 
-        if (type > max)
-            max = type;
-    }
+		if (type > max)
+			max = type;
+	}
 
-    const wins = (max >>> 8) + 1;
-    const size = wins * 34;
-    const map = Buffer.alloc(size, 0x00);
+	const wins = (max >>> 8) + 1;
+	const size = wins * 34;
+	const map = Buffer.alloc(size, 0x00);
 
-    for (const type of types) {
-        const win = type >>> 8;
-        const idx = type & 0xff;
-        const oct = ((win * 34) + 2) + (idx >>> 3);
-        const bit = idx & 7;
+	for (const type of types) {
+		const win = type >>> 8;
+		const idx = type & 0xff;
+		const oct = ((win * 34) + 2) + (idx >>> 3);
+		const bit = idx & 7;
 
-        map[oct] |= 1 << (7 - bit);
-    }
+		map[oct] |= 1 << (7 - bit);
+	}
 
-    let off = 0;
+	let off = 0;
 
-    for (let win = 0; win < wins; win++) {
-        const pos = (win * 34) + 2;
+	for (let win = 0; win < wins; win++) {
+		const pos = (win * 34) + 2;
 
-        let i = 31;
+		let i = 31;
 
-        for (; i >= 0; i--) {
-            if (map[pos + i] !== 0)
-                break;
-        }
+		for (; i >= 0; i--) {
+			if (map[pos + i] !== 0)
+				break;
+		}
 
-        const len = i + 1;
+		const len = i + 1;
 
-        if (len === 0)
-            continue;
+		if (len === 0)
+			continue;
 
-        map[off++] = win;
-        map[off++] = len;
+		map[off++] = win;
+		map[off++] = len;
 
-        for (let i = pos; i < pos + len; i++)
-            map[off++] = map[i];
-    }
+		for (let i = pos; i < pos + len; i++)
+			map[off++] = map[i];
+	}
 
-    return map.slice(0, off);
-};
+	return map.slice(0, off);
+}
 
 export function fromBitmap(map) {
-    assert(Buffer.isBuffer(map));
+	assert(Buffer.isBuffer(map));
 
-    const types = [];
+	const types = [];
 
-    let i = 0;
+	let i = 0;
 
-    while (i < map.length) {
-        if (i + 2 > map.length)
-            break;
+	while (i < map.length) {
+		if (i + 2 > map.length)
+			break;
 
-        if (i >= 34 * 256)
-            break;
+		if (i >= 34 * 256)
+			break;
 
-        const win = map[i++];
-        const len = map[i++];
+		const win = map[i++];
+		const len = map[i++];
 
-        if (len === 0 || len > 32)
-            break;
+		if (len === 0 || len > 32)
+			break;
 
-        if (i + len > map.length)
-            break;
+		if (i + len > map.length)
+			break;
 
-        const size = len << 3;
+		const size = len << 3;
 
-        for (let idx = 0; idx < size; idx++) {
-            const oct = idx >>> 3;
-            const bit = idx & 7;
-            const ch = map[i + oct];
-            const mask = 1 << (7 - bit);
+		for (let idx = 0; idx < size; idx++) {
+			const oct = idx >>> 3;
+			const bit = idx & 7;
+			const ch = map[i + oct];
+			const mask = 1 << (7 - bit);
 
-            if (ch & mask) {
-                const type = (win << 8) | idx;
-                types.push(type);
-            }
-        }
-    }
+			if (ch & mask) {
+				const type = (win << 8) | idx;
+				types.push(type);
+			}
+		}
+	}
 
-    return types;
-};
+	return types;
+}
 
 export function hasType(map, type) {
-    assert(Buffer.isBuffer(map));
-    assert((type & 0xffff) === type);
+	assert(Buffer.isBuffer(map));
+	assert((type & 0xffff) === type);
 
-    let i = 0;
+	let i = 0;
 
-    while (i < map.length) {
-        if (i + 2 > map.length)
-            break;
+	while (i < map.length) {
+		if (i + 2 > map.length)
+			break;
 
-        if (i >= 34 * 256)
-            break;
+		if (i >= 34 * 256)
+			break;
 
-        const win = map[i++];
-        const len = map[i++];
+		const win = map[i++];
+		const len = map[i++];
 
-        if (len === 0 || len > 32)
-            break;
+		if (len === 0 || len > 32)
+			break;
 
-        if (i + len > map.length)
-            break;
+		if (i + len > map.length)
+			break;
 
-        if (win * 256 > type)
-            break;
+		if (win * 256 > type)
+			break;
 
-        if ((win + 1) * 256 <= type) {
-            i += len;
-            continue;
-        }
+		if ((win + 1) * 256 <= type) {
+			i += len;
+			continue;
+		}
 
-        if (type < (win * 256) + len * 8) {
-            const oct = type >>> 3;
-            const bit = type & 7;
-            const ch = map[i + oct];
-            const mask = 1 << (7 - bit);
+		if (type < (win * 256) + len * 8) {
+			const oct = type >>> 3;
+			const bit = type & 7;
+			const ch = map[i + oct];
+			const mask = 1 << (7 - bit);
 
-            if (ch & mask)
-                return true;
-        }
+			if (ch & mask)
+				return true;
+		}
 
-        i += len;
-    }
+		i += len;
+	}
 
-    return false;
-};
+	return false;
+}
 
 export function toPortmap(ports) {
-    assert(Array.isArray(ports));
+	assert(Array.isArray(ports));
 
-    if (ports.length === 0)
-        return DUMMY;
+	if (ports.length === 0)
+		return DUMMY;
 
-    let max = 0;
+	let max = 0;
 
-    for (const port of ports) {
-        assert((port & 0xffff) === port);
+	for (const port of ports) {
+		assert((port & 0xffff) === port);
 
-        if (port > max)
-            max = port;
-    }
+		if (port > max)
+			max = port;
+	}
 
-    const bits = max + 1;
-    const size = (bits + 7) / 8 | 0;
-    const map = Buffer.alloc(size, 0x00);
+	const bits = max + 1;
+	const size = (bits + 7) / 8 | 0;
+	const map = Buffer.alloc(size, 0x00);
 
-    for (const port of ports) {
-        const oct = port >>> 3;
-        const bit = port & 7;
-        map[oct] |= 1 << (7 - bit);
-    }
+	for (const port of ports) {
+		const oct = port >>> 3;
+		const bit = port & 7;
+		map[oct] |= 1 << (7 - bit);
+	}
 
-    return map;
-};
+	return map;
+}
 
 export function fromPortmap(map) {
-    assert(Buffer.isBuffer(map));
+	assert(Buffer.isBuffer(map));
 
-    const ports = [];
+	const ports = [];
 
-    for (let port = 0; port <= 1024; port++) {
-        const oct = port >>> 3;
-        const bit = port & 7;
-        const mask = 1 << (7 - bit);
+	for (let port = 0; port <= 1024; port++) {
+		const oct = port >>> 3;
+		const bit = port & 7;
+		const mask = 1 << (7 - bit);
 
-        if (oct >= map.length)
-            break;
+		if (oct >= map.length)
+			break;
 
-        const ch = map[oct];
+		const ch = map[oct];
 
-        if (ch & mask)
-            ports.push(port);
-    }
+		if (ch & mask)
+			ports.push(port);
+	}
 
-    return ports;
-};
+	return ports;
+}
 
 export function hasPort(map, port) {
-    assert(Buffer.isBuffer(map));
-    assert((port & 0xffff) === port);
+	assert(Buffer.isBuffer(map));
+	assert((port & 0xffff) === port);
 
-    const oct = port >>> 3;
-    const bit = port & 7;
-    const mask = 1 << (7 - bit);
+	const oct = port >>> 3;
+	const bit = port & 7;
+	const mask = 1 << (7 - bit);
 
-    if (oct >= map.length)
-        return false;
+	if (oct >= map.length)
+		return false;
 
-    const ch = map[oct];
+	const ch = map[oct];
 
-    if (ch & mask)
-        return true;
+	if (ch & mask)
+		return true;
 
-    return false;
-};
+	return false;
+}
 
 /*
  * Helpers
  */
 
 function isDigit(num) {
-    return num >= 0x30 && num <= 0x39;
+	return num >= 0x30 && num <= 0x39;
 }
 
 function isDigits(buf, off, len) {
-    assert(Buffer.isBuffer(buf));
-    assert((off >>> 0) === off);
-    assert((len >>> 0) === len);
-    assert(len <= buf.length);
+	assert(Buffer.isBuffer(buf));
+	assert((off >>> 0) === off);
+	assert((len >>> 0) === len);
+	assert(len <= buf.length);
 
-    if (off + 3 > len)
-        return false;
+	if (off + 3 > len)
+		return false;
 
-    if (!isDigit(buf[off + 0]))
-        return false;
+	if (!isDigit(buf[off + 0]))
+		return false;
 
-    if (!isDigit(buf[off + 1]))
-        return false;
+	if (!isDigit(buf[off + 1]))
+		return false;
 
-    if (!isDigit(buf[off + 2]))
-        return false;
+	if (!isDigit(buf[off + 2]))
+		return false;
 
-    return true;
+	return true;
 }
 
 function toByte(buf, off) {
-    assert(Buffer.isBuffer(buf));
-    assert((off >>> 0) === off);
-    assert(off + 3 <= buf.length);
+	assert(Buffer.isBuffer(buf));
+	assert((off >>> 0) === off);
+	assert(off + 3 <= buf.length);
 
-    const hi = (buf[off + 0] - 0x30) * 100;
-    const md = (buf[off + 1] - 0x30) * 10;
-    const lo = (buf[off + 2] - 0x30) * 1;
+	const hi = (buf[off + 0] - 0x30) * 100;
+	const md = (buf[off + 1] - 0x30) * 10;
+	const lo = (buf[off + 2] - 0x30) * 1;
 
-    return hi + md + lo;
+	return hi + md + lo;
 }
 
 function toDDD(ch) {
-    assert((ch & 0xff) === ch);
+	assert((ch & 0xff) === ch);
 
-    const str = ch.toString(10);
+	const str = ch.toString(10);
 
-    switch (str.length) {
-        case 1:
-            return `00${str}`;
-        case 2:
-            return `0${str}`;
-        case 3:
-            return str;
-        default:
-            throw new Error('Invalid byte.');
-    }
+	switch (str.length) {
+		case 1:
+			return `00${str}`;
+		case 2:
+			return `0${str}`;
+		case 3:
+			return str;
+		default:
+			throw new Error('Invalid byte.');
+	}
 }

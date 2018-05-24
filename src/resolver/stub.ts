@@ -23,6 +23,7 @@ import {Code, Message, Opcode, Question, RecordType} from "../wire";
 class StubResolver extends DNSResolver {
 	conf: ResolvConf;
 	hosts: Hosts;
+
 	constructor(options) {
 		super(options);
 

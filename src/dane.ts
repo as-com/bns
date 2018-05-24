@@ -32,7 +32,7 @@ export function select(cert: Buffer, selector: number) {
 	}
 
 	return null;
-};
+}
 
 export function hash(data, matchingType) {
 	assert(Buffer.isBuffer(data));
@@ -62,7 +62,7 @@ export function sign(cert: Buffer, selector: number, matchingType: number) {
 		return null;
 
 	return _hash;
-};
+}
 
 export function verify(cert: Buffer, selector: number, matchingType: number, certificate: Buffer) {
 	const hash = sign(cert, selector, matchingType);
@@ -71,7 +71,7 @@ export function verify(cert: Buffer, selector: number, matchingType: number, cer
 		return false;
 
 	return hash.equals(certificate);
-};
+}
 
 /*
  * Helpers

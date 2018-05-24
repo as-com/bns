@@ -22,33 +22,33 @@ class Authority {
 	servers: IServer[];
 
 	constructor(zone?: string, name?: string) {
-        assert(zone == null || typeof zone === 'string');
-        assert(name == null || typeof name === 'string');
+		assert(zone == null || typeof zone === 'string');
+		assert(name == null || typeof name === 'string');
 
-        this.zone = zone || '.';
-        this.name = name || '.';
-        this.servers = [];
-    }
+		this.zone = zone || '.';
+		this.name = name || '.';
+		this.servers = [];
+	}
 
-    add(host, port) {
-        assert(typeof host === 'string');
-        assert((port & 0xffff) === port);
-        this.servers.push({host, port});
-        return this;
-    }
+	add(host, port) {
+		assert(typeof host === 'string');
+		assert((port & 0xffff) === port);
+		this.servers.push({host, port});
+		return this;
+	}
 
-    inject(auth) {
+	inject(auth) {
 		assert(auth instanceof Authority);
-        this.zone = auth.zone;
-        this.name = auth.name;
-        this.servers = auth.servers.slice();
-        return this;
-    }
+		this.zone = auth.zone;
+		this.name = auth.name;
+		this.servers = auth.servers.slice();
+		return this;
+	}
 
-    clone() {
+	clone() {
 		const copy = new Authority();
-        return copy.inject(this);
-    }
+		return copy.inject(this);
+	}
 }
 
 /*

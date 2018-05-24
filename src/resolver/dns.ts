@@ -46,422 +46,422 @@ class DNSResolver extends EventEmitter {
 	dnssec: boolean;
 
 	constructor(options?: IDNSResolverOptions) {
-        super();
+		super();
 
-        this.socket = new Client(options);
-        this.pending = new Map();
-        this.timer = null;
+		this.socket = new Client(options);
+		this.pending = new Map();
+		this.timer = null;
 
-        this.inet6 = this.socket.inet6;
-        this.tcp = this.socket.tcp;
-        this.forceTCP = false;
-        this.maxAttempts = 3;
-        this.maxTimeout = 2000;
-        this.rd = false;
-        this.edns = false;
-        this.ednsSize = MAX_EDNS_SIZE;
-        this.dnssec = false;
+		this.inet6 = this.socket.inet6;
+		this.tcp = this.socket.tcp;
+		this.forceTCP = false;
+		this.maxAttempts = 3;
+		this.maxTimeout = 2000;
+		this.rd = false;
+		this.edns = false;
+		this.ednsSize = MAX_EDNS_SIZE;
+		this.dnssec = false;
 
-        this.init();
-    }
+		this.init();
+	}
 
-    init() {
-        this.on('error', () => {
-        });
+	init() {
+		this.on('error', () => {
+		});
 
-        this.socket.on('close', () => {
-            this.emit('close');
-        });
+		this.socket.on('close', () => {
+			this.emit('close');
+		});
 
-        this.socket.on('error', (err) => {
-            this.emit('error', err);
-        });
+		this.socket.on('error', (err) => {
+			this.emit('error', err);
+		});
 
-        this.socket.on('listening', () => {
-            this.emit('listening');
-        });
+		this.socket.on('listening', () => {
+			this.emit('listening');
+		});
 
-        this.socket.on('message', (msg, rinfo) => {
-            try {
-                this.handle(msg, rinfo);
-            } catch (e) {
-                this.emit('error', e);
-            }
-        });
-    }
+		this.socket.on('message', (msg, rinfo) => {
+			try {
+				this.handle(msg, rinfo);
+			} catch (e) {
+				this.emit('error', e);
+			}
+		});
+	}
 
 	parseOptions(options?: IDNSResolverOptions) {
-        if (options == null)
-            return this;
+		if (options == null)
+			return this;
 
-        assert(options && typeof options === 'object');
+		assert(options && typeof options === 'object');
 
-        if (options.forceTCP != null) {
+		if (options.forceTCP != null) {
 			// assert(typeof options.forceTCP === 'boolean');
-            this.forceTCP = options.forceTCP;
-        }
+			this.forceTCP = options.forceTCP;
+		}
 
-        if (options.maxAttempts != null) {
-            assert((options.maxAttempts >>> 0) === options.maxAttempts);
-            this.maxAttempts = options.maxAttempts;
-        }
+		if (options.maxAttempts != null) {
+			assert((options.maxAttempts >>> 0) === options.maxAttempts);
+			this.maxAttempts = options.maxAttempts;
+		}
 
-        if (options.maxTimeout != null) {
-            assert((options.maxTimeout >>> 0) === options.maxTimeout);
-            this.maxTimeout = options.maxTimeout;
-        }
+		if (options.maxTimeout != null) {
+			assert((options.maxTimeout >>> 0) === options.maxTimeout);
+			this.maxTimeout = options.maxTimeout;
+		}
 
-        if (options.edns != null) {
+		if (options.edns != null) {
 			// assert(typeof options.edns === 'boolean');
-            this.edns = options.edns;
-        }
+			this.edns = options.edns;
+		}
 
-        if (options.ednsSize != null) {
-            assert((options.ednsSize >>> 0) === options.ednsSize);
-            assert(options.ednsSize >= MAX_UDP_SIZE);
-            assert(options.ednsSize <= MAX_EDNS_SIZE);
-            this.ednsSize = options.ednsSize;
-        }
+		if (options.ednsSize != null) {
+			assert((options.ednsSize >>> 0) === options.ednsSize);
+			assert(options.ednsSize >= MAX_UDP_SIZE);
+			assert(options.ednsSize <= MAX_EDNS_SIZE);
+			this.ednsSize = options.ednsSize;
+		}
 
-        if (options.dnssec != null) {
+		if (options.dnssec != null) {
 			// assert(typeof options.dnssec === 'boolean');
-            this.dnssec = options.dnssec;
-            if (this.dnssec)
-                this.edns = true;
-        }
+			this.dnssec = options.dnssec;
+			if (this.dnssec)
+				this.edns = true;
+		}
 
-        return this;
-    }
+		return this;
+	}
 
-    initOptions(options) {
-        return this.parseOptions(options);
-    }
+	initOptions(options) {
+		return this.parseOptions(options);
+	}
 
-    log(...args) {
-        this.emit('log', ...args);
-    }
+	log(...args) {
+		this.emit('log', ...args);
+	}
 
-    async open(...args) {
-        await this.socket.bind(...args);
+	async open(...args) {
+		await this.socket.bind(...args);
 
-        if (this.edns) {
-            this.socket.setRecvBufferSize(this.ednsSize);
-            this.socket.setSendBufferSize(this.ednsSize);
-        } else {
-            this.socket.setRecvBufferSize(MAX_UDP_SIZE);
-            this.socket.setSendBufferSize(MAX_UDP_SIZE);
-        }
+		if (this.edns) {
+			this.socket.setRecvBufferSize(this.ednsSize);
+			this.socket.setSendBufferSize(this.ednsSize);
+		} else {
+			this.socket.setRecvBufferSize(MAX_UDP_SIZE);
+			this.socket.setSendBufferSize(MAX_UDP_SIZE);
+		}
 
-        this.timer = setInterval(() => this.maybeRetry(), 1000);
-        this.timer.unref();
+		this.timer = setInterval(() => this.maybeRetry(), 1000);
+		this.timer.unref();
 
-        return this;
-    }
+		return this;
+	}
 
-    async close() {
-        await this.socket.close();
+	async close() {
+		await this.socket.close();
 
-        if (this.timer != null) {
-            clearInterval(this.timer);
-            this.timer = null;
-        }
+		if (this.timer != null) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
 
-        this.cancel();
+		this.cancel();
 
-        return this;
-    }
+		return this;
+	}
 
-    cancel() {
-        const pending = this.pending;
+	cancel() {
+		const pending = this.pending;
 
-        this.pending = new Map();
+		this.pending = new Map();
 
-        for (const query of pending.values()) {
-            query.unref();
-            try {
-                query.reject(new Error('Request cancelled.'));
-            } catch (e) {
-                this.emit('error', e);
-            }
-        }
+		for (const query of pending.values()) {
+			query.unref();
+			try {
+				query.reject(new Error('Request cancelled.'));
+			} catch (e) {
+				this.emit('error', e);
+			}
+		}
 
-        return this;
-    }
+		return this;
+	}
 
-    async bind(...args) {
-        return this.open(...args);
-    }
+	async bind(...args) {
+		return this.open(...args);
+	}
 
-    maybeRetry() {
-        const now = Date.now();
+	maybeRetry() {
+		const now = Date.now();
 
-        for (const query of this.pending.values()) {
-            if (now > query.time + this.maxTimeout)
-                this.retry(query, true, false);
-        }
-    }
+		for (const query of this.pending.values()) {
+			if (now > query.time + this.maxTimeout)
+				this.retry(query, true, false);
+		}
+	}
 
-    verify(msg, host, port) {
-        return true;
-    }
+	verify(msg, host, port) {
+		return true;
+	}
 
-    useTCP(type, size) {
-        if (this.forceTCP) {
-            assert(this.tcp);
-            return true;
-        }
+	useTCP(type, size) {
+		if (this.forceTCP) {
+			assert(this.tcp);
+			return true;
+		}
 
-        if (!this.tcp)
-            return false;
+		if (!this.tcp)
+			return false;
 
-        // Dig-style.
-        if (this.rd) {
+		// Dig-style.
+		if (this.rd) {
 			if (type === RecordType.ANY)
-                return true;
-        }
+				return true;
+		}
 
-        if (this.edns)
-            return size > this.ednsSize;
+		if (this.edns)
+			return size > this.ednsSize;
 
-        return size > MAX_UDP_SIZE;
-    }
+		return size > MAX_UDP_SIZE;
+	}
 
-    retry(query, rotate, forceTCP) {
-        let server = query.server;
+	retry(query, rotate, forceTCP) {
+		let server = query.server;
 
-        query.unref();
+		query.unref();
 
-        // Make sure our socket is dead.
-        if (server.tcp) {
-            const {port, host} = server;
-            this.socket.kill(port, host);
-        }
+		// Make sure our socket is dead.
+		if (server.tcp) {
+			const {port, host} = server;
+			this.socket.kill(port, host);
+		}
 
-        if (query.attempts >= this.maxAttempts) {
-            this.pending.delete(query.id);
+		if (query.attempts >= this.maxAttempts) {
+			this.pending.delete(query.id);
 
-            if (query.res)
-                query.resolve(query.res);
-            else
-                query.reject(new Error('Request timed out.'));
+			if (query.res)
+				query.resolve(query.res);
+			else
+				query.reject(new Error('Request timed out.'));
 
-            return;
-        }
+			return;
+		}
 
-        if (rotate) {
-            server = query.nextServer(server.tcp);
-            this.log('Switched servers to: %s (%d).', server.host, query.id);
-        }
+		if (rotate) {
+			server = query.nextServer(server.tcp);
+			this.log('Switched servers to: %s (%d).', server.host, query.id);
+		}
 
-        if (this.tcp && forceTCP)
-            server.tcp = true;
+		if (this.tcp && forceTCP)
+			server.tcp = true;
 
-        const {port, host, tcp} = server;
-        const msg = query.req.encode();
+		const {port, host, tcp} = server;
+		const msg = query.req.encode();
 
-        // Retry over TCP or UDP.
-        this.socket.send(msg, 0, msg.length, port, host, tcp);
+		// Retry over TCP or UDP.
+		this.socket.send(msg, 0, msg.length, port, host, tcp);
 
-        this.log('Retrying (%s): %d (tcp=%s)...', host, query.id, tcp);
+		this.log('Retrying (%s): %d (tcp=%s)...', host, query.id, tcp);
 
-        // Update time.
-        query.ref();
-        query.time = Date.now();
-        query.attempts += 1;
-    }
+		// Update time.
+		query.ref();
+		query.time = Date.now();
+		query.attempts += 1;
+	}
 
-    handle(msg, rinfo) {
-        // Close socket once we get an answer.
-        if (rinfo.tcp) {
-            const {port, address} = rinfo;
-            this.socket.drop(port, address);
-        }
+	handle(msg, rinfo) {
+		// Close socket once we get an answer.
+		if (rinfo.tcp) {
+			const {port, address} = rinfo;
+			this.socket.drop(port, address);
+		}
 
-        if (msg.length < 2) {
-            this.log('Malformed message (%s).', rinfo.address);
-            return;
-        }
+		if (msg.length < 2) {
+			this.log('Malformed message (%s).', rinfo.address);
+			return;
+		}
 
-        const id = msg.readUInt16BE(0, true);
-        const query = this.pending.get(id);
+		const id = msg.readUInt16BE(0, true);
+		const query = this.pending.get(id);
 
-        if (!query) {
-            this.log('Unsolicited message (%s): %d.', rinfo.address, id);
-            return;
-        }
+		if (!query) {
+			this.log('Unsolicited message (%s): %d.', rinfo.address, id);
+			return;
+		}
 
-        const {host, port} = query.server;
+		const {host, port} = query.server;
 
-        if (rinfo.address !== host || port !== rinfo.port) {
-            this.log(
-                'Possible reflection attack (%s != %s): %d.',
-                rinfo.address, host, id);
-            return;
-        }
+		if (rinfo.address !== host || port !== rinfo.port) {
+			this.log(
+				'Possible reflection attack (%s != %s): %d.',
+				rinfo.address, host, id);
+			return;
+		}
 
-        query.unref();
+		query.unref();
 
-        let {req} = query;
+		let {req} = query;
 		let res: Message;
 
-        try {
+		try {
 			res = Message.decode<Message>(msg);
-        } catch (e) {
-            this.log('Message %d failed deserialization (%s):', id, rinfo.address);
-            this.log(e.stack);
-            this.pending.delete(id);
-            query.reject(new Error('Encoding error.'));
-            return;
-        }
+		} catch (e) {
+			this.log('Message %d failed deserialization (%s):', id, rinfo.address);
+			this.log(e.stack);
+			this.pending.delete(id);
+			query.reject(new Error('Encoding error.'));
+			return;
+		}
 
-        if (!res.qr) {
-            this.pending.delete(id);
-            query.reject(new Error('Not a response.'));
-            return;
-        }
+		if (!res.qr) {
+			this.pending.delete(id);
+			query.reject(new Error('Not a response.'));
+			return;
+		}
 
-        if (!sameQuestion(req, res)) {
-            this.pending.delete(id);
-            query.reject(new Error('Invalid question.'));
-            return;
-        }
+		if (!sameQuestion(req, res)) {
+			this.pending.delete(id);
+			query.reject(new Error('Invalid question.'));
+			return;
+		}
 
-        if (this.tcp && res.tc) {
-            if (rinfo.tcp) {
-                this.pending.delete(id);
-                query.reject(new Error('Truncated TCP msg.'));
-                return;
-            }
+		if (this.tcp && res.tc) {
+			if (rinfo.tcp) {
+				this.pending.delete(id);
+				query.reject(new Error('Truncated TCP msg.'));
+				return;
+			}
 
-            // Retry over TCP if truncated.
-            this.log('Retrying over TCP (%s): %d.', host, id);
-            this.retry(query, false, true);
+			// Retry over TCP if truncated.
+			this.log('Retrying over TCP (%s): %d.', host, id);
+			this.retry(query, false, true);
 
-            return;
-        }
+			return;
+		}
 
 		if (res.opcode !== Opcode.QUERY) {
-            this.pending.delete(id);
-            query.reject(new Error('Unexpected opcode.'));
-            return;
-        }
+			this.pending.delete(id);
+			query.reject(new Error('Unexpected opcode.'));
+			return;
+		}
 
 		if ((res.code === Code.FORMERR
 			|| res.code === Code.NOTIMP
 			|| res.code === Code.SERVFAIL)
-            && (!res.isEDNS() && req.isEDNS())) {
-            // They don't like edns.
+			&& (!res.isEDNS() && req.isEDNS())) {
+			// They don't like edns.
 			req = req.clone() as any; // TODO?????
-            req.unsetEDNS();
+			req.unsetEDNS();
 
-            query.req = req;
-            query.res = res;
+			query.req = req;
+			query.res = res;
 
-            this.log('Retrying without EDNS (%s): %d.', host, id);
-            this.retry(query, false, false);
+			this.log('Retrying without EDNS (%s): %d.', host, id);
+			this.retry(query, false, false);
 
-            return;
-        }
+			return;
+		}
 
 		if (res.code === Code.FORMERR) {
-            this.pending.delete(id);
-            query.reject(new Error('Format error.'));
-            return;
-        }
+			this.pending.delete(id);
+			query.reject(new Error('Format error.'));
+			return;
+		}
 
 		if (res.code === Code.SERVFAIL) {
-            query.res = res;
-            this.log('Retrying due to failure (%s): %d.', host, id);
-            this.retry(query, true, false);
-            return;
-        }
+			query.res = res;
+			this.log('Retrying due to failure (%s): %d.', host, id);
+			this.retry(query, true, false);
+			return;
+		}
 
-        if (isLame(req, res)) {
-            this.pending.delete(id);
-            query.reject(new Error('Server is lame.'));
-            return;
-        }
+		if (isLame(req, res)) {
+			this.pending.delete(id);
+			query.reject(new Error('Server is lame.'));
+			return;
+		}
 
-        if (!this.verify(msg, host, port)) {
-            this.pending.delete(id);
-            query.reject(new Error('Could not verify response.'));
-            return;
-        }
+		if (!this.verify(msg, host, port)) {
+			this.pending.delete(id);
+			query.reject(new Error('Could not verify response.'));
+			return;
+		}
 
-        this.pending.delete(id);
+		this.pending.delete(id);
 
-        query.resolve(res);
-    }
+		query.resolve(res);
+	}
 
 	async exchange(req: Message, servers: IServer[]) {
 		// assert(req instanceof Message);
 		// assert(Array.isArray(servers));
-        assert(req.question.length > 0);
+		assert(req.question.length > 0);
 
-        const [qs] = req.question;
+		const [qs] = req.question;
 
-        if (!util.isName(qs.name))
-            throw new Error('Invalid qname.');
+		if (!util.isName(qs.name))
+			throw new Error('Invalid qname.');
 
-        if (servers.length === 0)
-            throw new Error('No servers available.');
+		if (servers.length === 0)
+			throw new Error('No servers available.');
 
-        req.id = util.id();
-        req.qr = false;
+		req.id = util.id();
+		req.qr = false;
 
-        const msg = req.encode();
-        const tcp = this.useTCP(qs.type, msg.length);
-        const query = new Query(req, servers, tcp);
-        const {port, host} = query.server;
+		const msg = req.encode();
+		const tcp = this.useTCP(qs.type, msg.length);
+		const query = new Query(req, servers, tcp);
+		const {port, host} = query.server;
 
-        this.log('Querying server: %s (%d) (tcp=%s)', host, req.id, tcp);
+		this.log('Querying server: %s (%d) (tcp=%s)', host, req.id, tcp);
 
-        this.socket.send(msg, 0, msg.length, port, host, tcp);
-        this.pending.set(query.id, query);
+		this.socket.send(msg, 0, msg.length, port, host, tcp);
+		this.pending.set(query.id, query);
 
-        query.ref();
+		query.ref();
 
 		return new Promise<Message>((resolve, reject) => {
-            query.resolve = resolve;
-            query.reject = reject;
-        });
-    }
+			query.resolve = resolve;
+			query.reject = reject;
+		});
+	}
 
 	async query(qs: Question, servers: IServer[]) {
 		// assert(qs instanceof Question);
 		// assert(Array.isArray(servers));
 
-        const req = new Message();
+		const req = new Message();
 		req.opcode = Opcode.QUERY;
-        req.rd = this.rd;
-        req.question.push(qs);
+		req.rd = this.rd;
+		req.question.push(qs);
 
-        if (this.edns) {
-            req.setEDNS(this.ednsSize, this.dnssec);
+		if (this.edns) {
+			req.setEDNS(this.ednsSize, this.dnssec);
 
-            // Cookie for recursive queries.
-            // Note that some authoritative
-            // servers get mad at this, most
-            // notably alidns' servers.
-            if (this.rd)
-                req.edns.setCookie(util.cookie());
-        }
+			// Cookie for recursive queries.
+			// Note that some authoritative
+			// servers get mad at this, most
+			// notably alidns' servers.
+			if (this.rd)
+				req.edns.setCookie(util.cookie());
+		}
 
-        if (this.rd)
-            req.ad = true;
+		if (this.rd)
+			req.ad = true;
 
-        return this.exchange(req, servers);
-    }
+		return this.exchange(req, servers);
+	}
 
-    async lookup(name, type, servers) {
-        const qs = new Question(name, type);
-        return this.query(qs, servers);
-    }
+	async lookup(name, type, servers) {
+		const qs = new Question(name, type);
+		return this.query(qs, servers);
+	}
 
-    async reverse(addr, servers) {
-        const name = encoding.reverse(addr);
+	async reverse(addr, servers) {
+		const name = encoding.reverse(addr);
 		return this.lookup(name, RecordType.PTR, servers);
-    }
+	}
 }
 
 /**
@@ -484,79 +484,79 @@ export class Query {
 	constructor(req: Message, servers: IServer[], tcp) {
 		// assert(req instanceof Message);
 		// assert(Array.isArray(servers));
-        assert(servers.length > 0);
-        assert(typeof tcp === 'boolean');
+		assert(servers.length > 0);
+		assert(typeof tcp === 'boolean');
 
-        this.id = req.id;
-        this.req = req;
-        this.index = 0;
-        this.servers = util.sortRandom(servers);
-        this.resolve = null;
-        this.reject = null;
-        this.attempts = 1;
-        this.res = null;
-        this.server = null;
-        this.time = Date.now();
-        this.timer = null;
+		this.id = req.id;
+		this.req = req;
+		this.index = 0;
+		this.servers = util.sortRandom(servers);
+		this.resolve = null;
+		this.reject = null;
+		this.attempts = 1;
+		this.res = null;
+		this.server = null;
+		this.time = Date.now();
+		this.timer = null;
 
-        this.nextServer(tcp);
-    }
+		this.nextServer(tcp);
+	}
 
-    ref() {
-        if (this.timer == null)
-            this.timer = setInterval(noop, 0x7fffffff);
-    }
+	ref() {
+		if (this.timer == null)
+			this.timer = setInterval(noop, 0x7fffffff);
+	}
 
-    unref() {
-        if (this.timer != null)
-            clearInterval(this.timer);
-        this.timer = null;
-    }
+	unref() {
+		if (this.timer != null)
+			clearInterval(this.timer);
+		this.timer = null;
+	}
 
 	getServer(index: number, tcp: boolean) {
-        assert((index >>> 0) < this.servers.length);
+		assert((index >>> 0) < this.servers.length);
 		// assert(typeof tcp === 'boolean');
 
-        const server = this.servers[index];
+		const server = this.servers[index];
 
-        let addr;
+		let addr;
 
-        if (typeof addr === 'string') {
-            addr = IP.fromHost(server, DNS_PORT);
-        } else {
-            if (!server || typeof server !== 'object')
-                throw new Error('Bad address passed to query.');
-            addr = server;
-        }
+		if (typeof addr === 'string') {
+			addr = IP.fromHost(server, DNS_PORT);
+		} else {
+			if (!server || typeof server !== 'object')
+				throw new Error('Bad address passed to query.');
+			addr = server;
+		}
 
-        const host = addr.address || addr.host;
-        const port = addr.port || DNS_PORT;
+		const host = addr.address || addr.host;
+		const port = addr.port || DNS_PORT;
 
-        if (!util.isIP(host))
-            throw new Error('Bad address passed to query.');
+		if (!util.isIP(host))
+			throw new Error('Bad address passed to query.');
 
-        if ((port & 0xffff) !== port)
-            throw new Error('Bad address passed to query.');
+		if ((port & 0xffff) !== port)
+			throw new Error('Bad address passed to query.');
 
-        return {
-            host: IP.normalize(host),
-            port,
-            tcp
-        };
-    }
+		return {
+			host: IP.normalize(host),
+			port,
+			tcp
+		};
+	}
 
 	nextServer(tcp: boolean) {
-        assert(this.index < this.servers.length);
+		assert(this.index < this.servers.length);
 
-        this.index += 1;
+		this.index += 1;
 
-        if (this.index === this.servers.length)
-            this.index = 0;
+		if (this.index === this.servers.length)
+			this.index = 0;
 
-        this.server = this.getServer(this.index, tcp);
+		this.server = this.getServer(this.index, tcp);
 
-        return this.server;
-    }
+		return this.server;
+	}
 }
 
 /*
@@ -564,66 +564,66 @@ export class Query {
  */
 
 function sameQuestion(req, res) {
-    switch (res.code) {
+	switch (res.code) {
 		case Code.NOTIMP:
 		case Code.FORMERR:
 		case Code.NXRRSET:
-            if (res.question.length === 0)
-                break;
+			if (res.question.length === 0)
+				break;
 		case Code.BADCOOKIE:
 		case Code.NOERROR:
 		case Code.NXDOMAIN:
 		case Code.YXDOMAIN:
 		case Code.REFUSED:
 		case Code.SERVFAIL:
-        default:
-            if (res.question.length === 0) {
-                if (res.tc)
-                    return true;
-                return false;
-            }
+		default:
+			if (res.question.length === 0) {
+				if (res.tc)
+					return true;
+				return false;
+			}
 
-            if (res.question.length > 1)
-                return false;
+			if (res.question.length > 1)
+				return false;
 
-            if (!res.question[0].equals(req.question[0]))
-                return false;
+			if (!res.question[0].equals(req.question[0]))
+				return false;
 
-            break;
-    }
+			break;
+	}
 
-    return true;
+	return true;
 }
 
 function isLame(req, res) {
-    if (req.question.length === 0)
-        return true;
+	if (req.question.length === 0)
+		return true;
 
-    const name = req.question[0].name;
+	const name = req.question[0].name;
 
 	if (res.code !== Code.NOERROR
 		&& res.code !== Code.YXDOMAIN
 		&& res.code !== Code.NXDOMAIN) {
-        return false;
-    }
+		return false;
+	}
 
-    if (res.answer.length !== 0)
-        return false;
+	if (res.answer.length !== 0)
+		return false;
 
-    for (const rr of res.authority) {
+	for (const rr of res.authority) {
 		if (rr.type !== RecordType.NS)
-            continue;
+			continue;
 
-        if (util.equal(rr.name, name))
-            continue;
+		if (util.equal(rr.name, name))
+			continue;
 
-        if (util.isSubdomain(rr.name, name))
-            continue;
+		if (util.isSubdomain(rr.name, name))
+			continue;
 
-        return true;
-    }
+		return true;
+	}
 
-    return false;
+	return false;
 }
 
 function noop() {

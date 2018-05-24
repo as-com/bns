@@ -38,7 +38,7 @@ export function createKey(pub: Buffer) {
 	rd.publicKey = pub;
 
 	return rr;
-};
+}
 
 export function sign(msg: Buffer, priv: Buffer, blake2b, secp256k1) {
 	assert(Buffer.isBuffer(msg));
@@ -54,7 +54,7 @@ export function sign(msg: Buffer, priv: Buffer, blake2b, secp256k1) {
 		const msg = blake2b.digest(data);
 		return secp256k1.sign(msg, priv);
 	});
-};
+}
 
 export function verify(msg: Buffer, pub: Buffer, blake2b, secp256k1) {
 	assert(Buffer.isBuffer(msg));
@@ -70,4 +70,4 @@ export function verify(msg: Buffer, pub: Buffer, blake2b, secp256k1) {
 		const keybuf = key.data.publicKey;
 		return secp256k1.verify(msg, sigbuf, keybuf);
 	});
-};
+}

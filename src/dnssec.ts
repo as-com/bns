@@ -54,569 +54,569 @@ let $HACK: Hash;
 export function createDS(dnskey: Record<DNSKEYRecord>, digestType: HashAlg) {
 	// assert(dnskey instanceof Record);
 	assert(dnskey.type === RecordType.DNSKEY);
-    assert((digestType & 0xff) === digestType);
+	assert((digestType & 0xff) === digestType);
 
-    const dk = dnskey.data; // DNSKEY
-    const hash = hashToHash[digestType];
+	const dk = dnskey.data; // DNSKEY
+	const hash = hashToHash[digestType];
 
-    if (!hash)
-        return null;
+	if (!hash)
+		return null;
 
-    const raw = dk.encode();
-    const keyTag = dk.keyTag(raw);
-    const owner = packName(dnskey.name);
+	const raw = dk.encode();
+	const keyTag = dk.keyTag(raw);
+	const owner = packName(dnskey.name);
 
-    const ctx = hash.hash();
-    ctx.init();
-    ctx.update(owner);
-    ctx.update(raw);
+	const ctx = hash.hash();
+	ctx.init();
+	ctx.update(owner);
+	ctx.update(raw);
 
 	const rr = new Record<DSRecord>();
-    rr.name = dnskey.name;
-    rr.class = dnskey.class;
+	rr.name = dnskey.name;
+	rr.class = dnskey.class;
 	rr.type = RecordType.DS;
-    rr.ttl = dnskey.ttl;
+	rr.ttl = dnskey.ttl;
 
-    const ds = new DSRecord();
-    ds.algorithm = dk.algorithm;
-    ds.digestType = digestType;
-    ds.keyTag = keyTag;
-    ds.digest = ctx.final();
+	const ds = new DSRecord();
+	ds.algorithm = dk.algorithm;
+	ds.digestType = digestType;
+	ds.keyTag = keyTag;
+	ds.digest = ctx.final();
 
-    rr.data = ds;
+	rr.data = ds;
 
-    return rr;
-};
+	return rr;
+}
 
 export function signMessage(msg, name, key, priv, lifespan) {
-    assert(msg instanceof Message);
+	assert(msg instanceof Message);
 
-    for (const section of msg.sections()) {
+	for (const section of msg.sections()) {
 		const sigs = signSection(section, name, key, priv, lifespan);
-        for (const sig of sigs)
-            section.push(sig);
-    }
+		for (const sig of sigs)
+			section.push(sig);
+	}
 
-    return msg;
-};
+	return msg;
+}
 
 export function signSection(section, name, key, priv, lifespan) {
-    assert(Array.isArray(section));
+	assert(Array.isArray(section));
 
-    const set = new Set();
-    const sigs = [];
+	const set = new Set();
+	const sigs = [];
 
-    for (const rr of section)
-        set.add(rr.type);
+	for (const rr of section)
+		set.add(rr.type);
 
-    for (const type of set) {
+	for (const type of set) {
 		if (type === RecordType.OPT
 			|| type === RecordType.RRSIG
 			|| type === RecordType.SIG) {
-            continue;
-        }
+			continue;
+		}
 
-        const rrset = extractSet(section, name, type);
+		const rrset = extractSet(section, name, type);
 
-        if (rrset.length === 0)
-            continue;
+		if (rrset.length === 0)
+			continue;
 
 		const sig = rrsign(key, priv, rrset, lifespan);
-        sigs.push(sig);
-    }
+		sigs.push(sig);
+	}
 
-    return sigs;
-};
+	return sigs;
+}
 
 export function signType(section, type, key, priv, lifespan) {
-    assert(Array.isArray(section));
-    assert((type & 0xffff) === type);
+	assert(Array.isArray(section));
+	assert((type & 0xffff) === type);
 
-    const rrset = extractSet(section, '', type);
+	const rrset = extractSet(section, '', type);
 
-    if (rrset.length === 0)
-        return section;
+	if (rrset.length === 0)
+		return section;
 
 	const sig = rrsign(key, priv, rrset, lifespan);
 
-    section.push(sig);
+	section.push(sig);
 
-    return section;
-};
+	return section;
+}
 
 export function rrsign(key, priv, rrset, lifespan) {
-    if (lifespan == null)
-        lifespan = 14 * 24 * 60 * 60;
+	if (lifespan == null)
+		lifespan = 14 * 24 * 60 * 60;
 
-    assert(key instanceof Record);
+	assert(key instanceof Record);
 	assert(key.type === RecordType.DNSKEY);
-    assert(Array.isArray(rrset));
-    assert((lifespan >>> 0) === lifespan);
+	assert(Array.isArray(rrset));
+	assert((lifespan >>> 0) === lifespan);
 
-    const sig = new Record();
-    const s = new RRSIGRecord();
+	const sig = new Record();
+	const s = new RRSIGRecord();
 
-    sig.name = key.name;
-    sig.ttl = key.ttl;
-    sig.class = key.class;
+	sig.name = key.name;
+	sig.ttl = key.ttl;
+	sig.class = key.class;
 	sig.type = RecordType.RRSIG;
-    sig.data = s;
+	sig.data = s;
 
-    s.keyTag = key.data.keyTag();
-    s.signerName = key.name;
-    s.algorithm = key.data.algorithm;
-    s.inception = util.now() - lifespan;
-    s.expiration = util.now() + lifespan;
+	s.keyTag = key.data.keyTag();
+	s.signerName = key.name;
+	s.algorithm = key.data.algorithm;
+	s.inception = util.now() - lifespan;
+	s.expiration = util.now() + lifespan;
 
 	return sign(sig, priv, rrset);
-};
+}
 
 export function sign(sig, priv, rrset) {
-    assert(sig instanceof Record);
+	assert(sig instanceof Record);
 	assert(sig.type === RecordType.RRSIG);
-    assert(Buffer.isBuffer(priv));
-    assert(Array.isArray(rrset));
+	assert(Buffer.isBuffer(priv));
+	assert(Array.isArray(rrset));
 
-    const s = sig.data; // RRSIG
+	const s = sig.data; // RRSIG
 
-    if (!isRRSet(rrset))
-        throw new Error('Invalid RR set.');
+	if (!isRRSet(rrset))
+		throw new Error('Invalid RR set.');
 
-    if (s.keyTag === 0 || s.signerName.length === 0 || s.algorithm === 0)
-        throw new Error('Invalid signature record.');
+	if (s.keyTag === 0 || s.signerName.length === 0 || s.algorithm === 0)
+		throw new Error('Invalid signature record.');
 
 	sig.type = RecordType.RRSIG;
-    sig.name = rrset[0].name;
-    sig.class = rrset[0].class;
-    sig.data = s;
+	sig.name = rrset[0].name;
+	sig.class = rrset[0].class;
+	sig.data = s;
 
-    if (s.origTTL === 0)
-        s.origTTL = rrset[0].ttl;
+	if (s.origTTL === 0)
+		s.origTTL = rrset[0].ttl;
 
-    s.typeCovered = rrset[0].type;
-    s.labels = countLabels(rrset[0].name);
+	s.typeCovered = rrset[0].type;
+	s.labels = countLabels(rrset[0].name);
 
-    if (rrset[0].name[0] === '*')
-        s.labels -= 1;
+	if (rrset[0].name[0] === '*')
+		s.labels -= 1;
 
 	const data = signatureHash(sig, rrset);
 
-    if (!data)
-        throw new Error('Bad number of labels.');
+	if (!data)
+		throw new Error('Bad number of labels.');
 
 	s.signature = signData(priv, data, s.algorithm);
 
-    return sig;
-};
+	return sig;
+}
 
 export function signData(priv, data, algorithm) {
-    assert(Buffer.isBuffer(priv));
-    assert(Buffer.isBuffer(data));
-    assert((algorithm & 0xff) === algorithm);
+	assert(Buffer.isBuffer(priv));
+	assert(Buffer.isBuffer(data));
+	assert((algorithm & 0xff) === algorithm);
 
-    const keybuf = priv;
-    const hash = algToHash[algorithm];
+	const keybuf = priv;
+	const hash = algToHash[algorithm];
 
-    if (!hash)
-        throw new Error('Unknown hash algorithm.');
+	if (!hash)
+		throw new Error('Unknown hash algorithm.');
 
-    switch (algorithm) {
+	switch (algorithm) {
 		case EncAlg.DSA:
 		case EncAlg.DSANSEC3SHA1:
-            throw new Error('Unsupported public key algorithm.');
+			throw new Error('Unsupported public key algorithm.');
 		case EncAlg.RSAMD5:
 		case EncAlg.RSASHA1:
 		case EncAlg.RSASHA1NSEC3SHA1:
 		case EncAlg.RSASHA256:
 		case EncAlg.RSASHA512:
-            return crypto.signRSA(hash, data, keybuf);
+			return crypto.signRSA(hash, data, keybuf);
 		case EncAlg.ECDSAP256SHA256:
-            return crypto.signECDSA('p256', hash, data, keybuf);
+			return crypto.signECDSA('p256', hash, data, keybuf);
 		case EncAlg.ECDSAP384SHA384:
-            return crypto.signECDSA('p384', hash, data, keybuf);
+			return crypto.signECDSA('p384', hash, data, keybuf);
 		case EncAlg.ED25519:
-            return crypto.signEDDSA('ed25519', hash, data, keybuf);
+			return crypto.signEDDSA('ed25519', hash, data, keybuf);
 		case EncAlg.ED448:
-            throw new Error('Unsupported public key algorithm.');
-    }
+			throw new Error('Unsupported public key algorithm.');
+	}
 
-    throw new Error('Unknown public key algorithm.');
-};
+	throw new Error('Unknown public key algorithm.');
+}
 
 export function verify(sig, key, rrset) {
-    assert(sig instanceof Record);
+	assert(sig instanceof Record);
 	assert(sig.type === RecordType.RRSIG);
-    assert(key instanceof Record);
+	assert(key instanceof Record);
 	assert(key.type === RecordType.DNSKEY);
-    assert(Array.isArray(rrset));
+	assert(Array.isArray(rrset));
 
-    const s = sig.data; // RRSIG
-    const k = key.data; // DNSKEY
+	const s = sig.data; // RRSIG
+	const k = key.data; // DNSKEY
 
-    if (!isRRSet(rrset))
-        return false; // Invalid RR set
+	if (!isRRSet(rrset))
+		return false; // Invalid RR set
 
-    if (s.keyTag !== k.keyTag())
-        return false; // Key tag mismatch
+	if (s.keyTag !== k.keyTag())
+		return false; // Key tag mismatch
 
-    if (sig.class !== key.class)
-        return false; // Class mismatch
+	if (sig.class !== key.class)
+		return false; // Class mismatch
 
-    if (s.algorithm !== k.algorithm)
-        return false; // Algorithm mismatch
+	if (s.algorithm !== k.algorithm)
+		return false; // Algorithm mismatch
 
-    if (s.signerName.toLowerCase() !== key.name.toLowerCase())
-        return false; // Name mismatch
+	if (s.signerName.toLowerCase() !== key.name.toLowerCase())
+		return false; // Name mismatch
 
-    if (k.protocol !== 3)
-        return false; // Invalid protocol
+	if (k.protocol !== 3)
+		return false; // Invalid protocol
 
-    if (rrset[0].class !== sig.class)
-        return false; // Class mismatch
+	if (rrset[0].class !== sig.class)
+		return false; // Class mismatch
 
-    if (rrset[0].type !== s.typeCovered)
-        return false; // Type mismatch
+	if (rrset[0].type !== s.typeCovered)
+		return false; // Type mismatch
 
 	const data = signatureHash(sig, rrset);
 
-    if (!data)
-        return false;
+	if (!data)
+		return false;
 
 	return verifyData(sig, key, data, s.algorithm);
-};
+}
 
 export function verifyData(sig, key, data, algorithm) {
-    assert(sig instanceof Record);
+	assert(sig instanceof Record);
 	assert(sig.type === RecordType.RRSIG);
-    assert(key instanceof Record);
+	assert(key instanceof Record);
 	assert(key.type === RecordType.DNSKEY);
-    assert(Buffer.isBuffer(data));
-    assert((algorithm & 0xff) === algorithm);
+	assert(Buffer.isBuffer(data));
+	assert((algorithm & 0xff) === algorithm);
 
-    const keybuf = key.data.publicKey;
-    const sigbuf = sig.data.signature;
-    const hash = algToHash[algorithm];
+	const keybuf = key.data.publicKey;
+	const sigbuf = sig.data.signature;
+	const hash = algToHash[algorithm];
 
-    if (!hash)
-        return false;
+	if (!hash)
+		return false;
 
-    switch (algorithm) {
+	switch (algorithm) {
 		case EncAlg.DSA:
 		case EncAlg.DSANSEC3SHA1:
-            return false;
+			return false;
 		case EncAlg.RSAMD5:
 		case EncAlg.RSASHA1:
 		case EncAlg.RSASHA1NSEC3SHA1:
 		case EncAlg.RSASHA256:
 		case EncAlg.RSASHA512:
-            return crypto.verifyRSA(hash, data, sigbuf, keybuf);
+			return crypto.verifyRSA(hash, data, sigbuf, keybuf);
 		case EncAlg.ECDSAP256SHA256:
-            return crypto.verifyECDSA('p256', hash, data, sigbuf, keybuf);
+			return crypto.verifyECDSA('p256', hash, data, sigbuf, keybuf);
 		case EncAlg.ECDSAP384SHA384:
-            return crypto.verifyECDSA('p384', hash, data, sigbuf, keybuf);
+			return crypto.verifyECDSA('p384', hash, data, sigbuf, keybuf);
 		case EncAlg.ED25519:
-            return crypto.verifyEDDSA('ed25519', hash, data, sigbuf, keybuf);
+			return crypto.verifyEDDSA('ed25519', hash, data, sigbuf, keybuf);
 		case EncAlg.ED448:
-            return false;
-    }
+			return false;
+	}
 
-    return false; // Unknown algorithm
-};
+	return false; // Unknown algorithm
+}
 
 export function signatureHash(sig, rrset) {
-    assert(sig instanceof Record);
+	assert(sig instanceof Record);
 	assert(sig.type === RecordType.RRSIG);
-    assert(Array.isArray(rrset));
+	assert(Array.isArray(rrset));
 
-    const s = sig.data; // RRSIG
-    const records = [];
+	const s = sig.data; // RRSIG
+	const records = [];
 
-    for (const item of rrset) {
-        assert(item instanceof Record);
+	for (const item of rrset) {
+		assert(item instanceof Record);
 
-        const rr = item.deepClone();
-        const labels = splitName(rr.name);
+		const rr = item.deepClone();
+		const labels = splitName(rr.name);
 
-        // Server is using wildcards.
-        if (labels.length > s.labels) {
-            const i = labels.length - s.labels;
-            const name = labels.slice(i).join('.');
-            rr.name = `*.${name}.`;
-        }
+		// Server is using wildcards.
+		if (labels.length > s.labels) {
+			const i = labels.length - s.labels;
+			const name = labels.slice(i).join('.');
+			rr.name = `*.${name}.`;
+		}
 
-        // Invalid RR set.
-        if (labels.length < s.labels)
-            return null;
+		// Invalid RR set.
+		if (labels.length < s.labels)
+			return null;
 
-        // Canonical TTL.
-        rr.ttl = s.origTTL;
+		// Canonical TTL.
+		rr.ttl = s.origTTL;
 
-        // Canonicalize all domain
-        // names (see RFC 4034).
-        rr.canonical();
+		// Canonicalize all domain
+		// names (see RFC 4034).
+		rr.canonical();
 
-        // Push for sorting.
-        records.push(rr.encode());
-    }
+		// Push for sorting.
+		records.push(rr.encode());
+	}
 
-    records.sort(compare);
+	records.sort(compare);
 
-    const tbs = s.toTBS();
+	const tbs = s.toTBS();
 
-    let size = 0;
+	let size = 0;
 
-    size += tbs.length;
+	size += tbs.length;
 
-    for (let i = 0; i < records.length; i++) {
-        const raw = records[i];
+	for (let i = 0; i < records.length; i++) {
+		const raw = records[i];
 
-        if (i > 0 && raw.equals(records[i - 1]))
-            continue;
+		if (i > 0 && raw.equals(records[i - 1]))
+			continue;
 
-        size += raw.length;
-    }
+		size += raw.length;
+	}
 
-    const bw = bio.write(size);
+	const bw = bio.write(size);
 
-    bw.writeBytes(tbs);
+	bw.writeBytes(tbs);
 
-    for (let i = 0; i < records.length; i++) {
-        const raw = records[i];
+	for (let i = 0; i < records.length; i++) {
+		const raw = records[i];
 
-        if (i > 0 && raw.equals(records[i - 1]))
-            continue;
+		if (i > 0 && raw.equals(records[i - 1]))
+			continue;
 
-        bw.writeBytes(raw);
-    }
+		bw.writeBytes(raw);
+	}
 
-    return bw.render();
-};
+	return bw.render();
+}
 
 export function verifyDS(msg: Message, ds: Record<DSRecord>[], name: string) {
 	// assert(msg instanceof Message);
 	// assert(Array.isArray(ds));
 	// assert(typeof name === 'string');
 
-    if (ds.length === 0)
-        return false;
+	if (ds.length === 0)
+		return false;
 
-    const kskMap = new Map();
+	const kskMap = new Map();
 
-    for (const rr of msg.answer) {
+	for (const rr of msg.answer) {
 		if (rr.type !== RecordType.DNSKEY)
-            continue;
+			continue;
 
 		const rd = rr.data as DNSKEYRecord;
 
 		if (rd.flags & KeyFlag.REVOKE)
-            continue;
+			continue;
 
 		if (!(rd.flags & KeyFlag.ZONE))
-            continue;
+			continue;
 
-        if (!util.equal(rr.name, name))
-            continue;
+		if (!util.equal(rr.name, name))
+			continue;
 
 		if (rd.flags & KeyFlag.SEP)
-            kskMap.set(rd.keyTag(), rr);
-    }
+			kskMap.set(rd.keyTag(), rr);
+	}
 
-    const valid = new Map();
+	const valid = new Map();
 
-    for (const rr of ds) {
+	for (const rr of ds) {
 		// assert(rr instanceof Record);
 		// assert(rr.type === RecordType.DS);
 
-        const rd = rr.data;
-        const dnskey = kskMap.get(rd.keyTag);
+		const rd = rr.data;
+		const dnskey = kskMap.get(rd.keyTag);
 
-        if (!dnskey)
-            continue;
+		if (!dnskey)
+			continue;
 
 		const ds = createDS(dnskey, rd.digestType);
 
-        if (!ds)
-            continue; // Failed to convert KSK (unknown alg).
+		if (!ds)
+			continue; // Failed to convert KSK (unknown alg).
 
-        if (!ds.data.digest.equals(rd.digest))
-            return null; // Mismatching DS.
+		if (!ds.data.digest.equals(rd.digest))
+			return null; // Mismatching DS.
 
-        valid.set(rd.keyTag, dnskey);
+		valid.set(rd.keyTag, dnskey);
 
-        continue;
-    }
+		continue;
+	}
 
-    if (valid.size === 0)
-        return null;
+	if (valid.size === 0)
+		return null;
 
-    return valid;
-};
+	return valid;
+}
 
 export function verifyZSK(msg, kskMap, name) {
-    assert(msg instanceof Message);
-    assert(kskMap instanceof Map);
-    assert(typeof name === 'string');
+	assert(msg instanceof Message);
+	assert(kskMap instanceof Map);
+	assert(typeof name === 'string');
 
-    if (msg.answer.length === 0)
-        return false; // No keys
+	if (msg.answer.length === 0)
+		return false; // No keys
 
-    if (kskMap.size === 0)
-        return false; // No keys
+	if (kskMap.size === 0)
+		return false; // No keys
 
-    const keys = [];
-    const sigs = [];
+	const keys = [];
+	const sigs = [];
 
-    for (const rr of msg.answer) {
-        const rd = rr.data;
+	for (const rr of msg.answer) {
+		const rd = rr.data;
 
 		if (rr.type === RecordType.DNSKEY) {
-            if (!util.equal(rr.name, name))
-                continue;
-            keys.push(rr);
-            continue;
-        }
+			if (!util.equal(rr.name, name))
+				continue;
+			keys.push(rr);
+			continue;
+		}
 
 		if (rr.type === RecordType.RRSIG) {
 			if (rd.typeCovered !== RecordType.DNSKEY)
-                continue;
+				continue;
 
-            if (!util.equal(rr.name, name))
-                continue;
+			if (!util.equal(rr.name, name))
+				continue;
 
-            if (!kskMap.has(rd.keyTag))
-                continue;
+			if (!kskMap.has(rd.keyTag))
+				continue;
 
-            sigs.push(rr);
-            continue;
-        }
-    }
+			sigs.push(rr);
+			continue;
+		}
+	}
 
-    if (keys.length === 0)
-        return false; // No keys
+	if (keys.length === 0)
+		return false; // No keys
 
-    if (sigs.length === 0)
-        return false; // No sigs
+	if (sigs.length === 0)
+		return false; // No sigs
 
-    for (const sig of sigs) {
-        const s = sig.data;
-        const dnskey = kskMap.get(s.keyTag);
+	for (const sig of sigs) {
+		const s = sig.data;
+		const dnskey = kskMap.get(s.keyTag);
 
-        if (!dnskey)
-            return false; // Missing DNS Key
+		if (!dnskey)
+			return false; // Missing DNS Key
 
-        if (!s.validityPeriod())
-            return false; // Invalid Signature Period
+		if (!s.validityPeriod())
+			return false; // Invalid Signature Period
 
 		if (!verify(sig, dnskey, keys))
-            return false; // Invalid Signature
-    }
+			return false; // Invalid Signature
+	}
 
-    return true;
-};
+	return true;
+}
 
 export function verifyRRSIG(msg, zskMap) {
-    assert(msg instanceof Message);
-    assert(zskMap instanceof Map);
+	assert(msg instanceof Message);
+	assert(zskMap instanceof Map);
 
-    const isAnswer = msg.isAnswer();
-    const isReferral = msg.isReferral();
+	const isAnswer = msg.isAnswer();
+	const isReferral = msg.isReferral();
 
-    if (!isAnswer && !isReferral)
-        return true;
+	if (!isAnswer && !isReferral)
+		return true;
 
-    const set = new Set();
+	const set = new Set();
 
-    let section = msg.answer;
+	let section = msg.answer;
 
-    if (isReferral) {
-        section = msg.authority;
+	if (isReferral) {
+		section = msg.authority;
 
-        // We need a signed DS, NSEC3,
-        // or NS record for a referral.
+		// We need a signed DS, NSEC3,
+		// or NS record for a referral.
 		if (util.hasType(section, RecordType.DS))
 			set.add(RecordType.DS);
 
 		if (util.hasType(section, RecordType.NSEC3))
 			set.add(RecordType.NSEC3);
-    }
+	}
 
-    // If we don't have any specific
-    // types to look for, verify
-    // everything in the section.
-    if (set.size === 0) {
-        for (const rr of section) {
-            // No signed signatures.
+	// If we don't have any specific
+	// types to look for, verify
+	// everything in the section.
+	if (set.size === 0) {
+		for (const rr of section) {
+			// No signed signatures.
 			if (rr.type === RecordType.RRSIG
 				|| rr.type === RecordType.SIG) {
-                continue;
-            }
+				continue;
+			}
 
-            // No special records.
+			// No special records.
 			if (rr.type === RecordType.OPT
 				|| rr.type === RecordType.TSIG) {
-                continue;
-            }
+				continue;
+			}
 
-            set.add(rr.type);
-        }
-    }
+			set.add(rr.type);
+		}
+	}
 
-    // Some kind of error.
-    // Verify elsewhere.
-    if (set.size === 0)
-        return true;
+	// Some kind of error.
+	// Verify elsewhere.
+	if (set.size === 0)
+		return true;
 
-    for (const rr of section) {
+	for (const rr of section) {
 		if (rr.type !== RecordType.RRSIG)
-            continue;
+			continue;
 
-        const s = rr.data;
-        const dnskey = zskMap.get(s.keyTag);
+		const s = rr.data;
+		const dnskey = zskMap.get(s.keyTag);
 
-        if (!dnskey)
-            continue; // Missing DNS Key
+		if (!dnskey)
+			continue; // Missing DNS Key
 
-        if (!s.validityPeriod())
-            continue; // Invalid Signature Period
+		if (!s.validityPeriod())
+			continue; // Invalid Signature Period
 
-        const rrset = extractSet(section, rr.name, s.typeCovered);
+		const rrset = extractSet(section, rr.name, s.typeCovered);
 
-        if (rrset.length === 0)
-            continue; // Missing Signed
+		if (rrset.length === 0)
+			continue; // Missing Signed
 
 		if (!verify(rr, dnskey, rrset))
-            continue; // Invalid Signature
+			continue; // Invalid Signature
 
-        set.delete(s.typeCovered);
-    }
+		set.delete(s.typeCovered);
+	}
 
-    if (set.size !== 0)
-        return false; // Unsigned Data
+	if (set.size !== 0)
+		return false; // Unsigned Data
 
-    return true;
-};
+	return true;
+}
 
 export function filterMessage(msg, type) {
-    assert(msg instanceof Message);
-    assert((type & 0xffff) === type);
+	assert(msg instanceof Message);
+	assert((type & 0xffff) === type);
 
 	msg.answer = filterSection(msg.answer, type);
 	msg.authority = filterSection(msg.authority, type);
 	msg.additional = filterSection(msg.additional, type);
 
-    return msg;
-};
+	return msg;
+}
 
 export function filterSection(section, type) {
-    assert(Array.isArray(section));
-    assert((type & 0xffff) === type);
+	assert(Array.isArray(section));
+	assert((type & 0xffff) === type);
 
-    const filtered = [];
+	const filtered = [];
 
-    for (const rr of section) {
-        assert(rr instanceof Record);
+	for (const rr of section) {
+		assert(rr instanceof Record);
 
-        switch (rr.type) {
+		switch (rr.type) {
 			case RecordType.DS:
 			case RecordType.DLV:
 			case RecordType.DNSKEY:
@@ -625,28 +625,28 @@ export function filterSection(section, type) {
 			case RecordType.NSEC:
 			case RecordType.NSEC3:
 			case RecordType.NSEC3PARAM:
-                if (type !== rr.type)
-                    break;
-            // fall through
-            default:
-                filtered.push(rr);
-                break;
-        }
-    }
+				if (type !== rr.type)
+					break;
+			// fall through
+			default:
+				filtered.push(rr);
+				break;
+		}
+	}
 
-    return filtered;
-};
+	return filtered;
+}
 
 /*
  * Helpers
  */
 
 function compare(a, b) {
-    const [ao] = readName(a, 0);
-    const [bo] = readName(b, 0);
-    const ab = a.slice(ao + 10);
-    const bb = b.slice(bo + 10);
-    return ab.compare(bb);
+	const [ao] = readName(a, 0);
+	const [bo] = readName(b, 0);
+	const ab = a.slice(ao + 10);
+	const bb = b.slice(bo + 10);
+	return ab.compare(bb);
 }
 
 /*

@@ -123,4 +123,4 @@ export function decodeName(name: string) {
 		protocol: protocol.substring(1).toLowerCase(),
 		port: util.parseU16(port.substring(1))
 	};
-};
+}

@@ -20,35 +20,36 @@ class AuthServer extends DNSServer<DNSResolver> {
 	zone: Zone;
 	file: string;
 	ra: boolean;
-    constructor(options) {
-        super(options);
-        this.zone = new Zone();
-        this.file = null;
-        this.ra = false;
-        this.initOptions(options);
-    }
+
+	constructor(options) {
+		super(options);
+		this.zone = new Zone();
+		this.file = null;
+		this.ra = false;
+		this.initOptions(options);
+	}
 
 	initOptions(options) {
 		return super.initOptions(options);
 	}
 
 	setOrigin(name) {
-        this.zone.setOrigin(name);
-        return this;
-    }
+		this.zone.setOrigin(name);
+		return this;
+	}
 
-    setFile(file) {
-        this.zone.clearRecords();
-        this.zone.fromFile(file);
-        this.file = file;
-        return this;
-    }
+	setFile(file) {
+		this.zone.clearRecords();
+		this.zone.fromFile(file);
+		this.file = file;
+		return this;
+	}
 
 	async resolve(req, rinfo): Promise<Message> {
-        const [qs] = req.question;
-        const {name, type} = qs;
-        return this.zone.resolve(name, type);
-    }
+		const [qs] = req.question;
+		const {name, type} = qs;
+		return this.zone.resolve(name, type);
+	}
 }
 
 /*

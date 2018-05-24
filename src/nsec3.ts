@@ -284,7 +284,7 @@ export function verifyDelegation(delegation: string, nsec: Record<NSEC3Record>[]
 		return false; // NSEC bad delegation
 
 	return true;
-};
+}
 
 /*
  * Helpers

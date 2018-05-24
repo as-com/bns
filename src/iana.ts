@@ -796,14 +796,14 @@ export function getPort(service: string) {
 
 	const port = Service[service];
 
-    if ((port & 0xffff) !== port)
-        return 0;
+	if ((port & 0xffff) !== port)
+		return 0;
 
-    return port;
+	return port;
 }
 
 export function getService(port: number) {
-    assert((port & 0xffff) === port);
+	assert((port & 0xffff) === port);
 	return Service[port] || null;
 }
 

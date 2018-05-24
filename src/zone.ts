@@ -381,6 +381,7 @@ export class RecordMap {
 
 export class NameList {
 	private names: any[];
+
 	constructor() {
 		this.names = [];
 	}

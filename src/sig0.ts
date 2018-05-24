@@ -82,7 +82,7 @@ export function sign(msg: Buffer, key: Record<KEYRecord>, priv: Buffer, fudge: n
 	rr.write(bw);
 
 	return bw.render();
-};
+}
 
 export function verify(msg: Buffer, key: Record<KEYRecord>, verifier?: Function) {
 	// assert(Buffer.isBuffer(msg));
@@ -133,7 +133,7 @@ export function verify(msg: Buffer, key: Record<KEYRecord>, verifier?: Function)
 	}
 
 	return dnssec.verifyData(rr, key, data, rd.algorithm);
-};
+}
 
 /*
  * Helpers
