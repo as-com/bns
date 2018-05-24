@@ -36,9 +36,9 @@ export interface IBaseOptions {
 
 export class Base extends EventEmitter {
 	inet6: boolean;
-	tcp: boolean;
+	tcp = true;
 	socket: dgram.Socket;
-	sockets: Map<string, TCPSocket>;
+	sockets = new Map<string, TCPSocket>();
 
 	/**
 	 * Create a base socket.
@@ -54,7 +54,6 @@ export class Base extends EventEmitter {
 		this.inet6 = opt.type === 'udp6';
 		this.tcp = true;
 		this.socket = udp.createSocket(opt);
-		this.sockets = new Map();
 
 		if (options && typeof options === 'object') {
 			if (options.tcp != null) {
@@ -98,7 +97,7 @@ export class Base extends EventEmitter {
 		});
 	}
 
-	addMembership(addr, iface) {
+	addMembership(addr: string, iface?: string) {
 		this.socket.addMembership(addr, iface);
 		return this;
 	}
@@ -270,21 +269,24 @@ class Client extends Base {
 	}
 }
 
+export interface IServerOptions extends IBaseOptions {
+
+}
+
 /**
  * Server
  * @extends EventEmitter
  */
-
 class Server extends Base {
 	server: net.Server;
 
 	/**
 	 * Create a UDP socket.
 	 * @constructor
-	 * @param {Function?} handler
+	 * @param options
 	 */
 
-	constructor(options) {
+	constructor(options?: IServerOptions) {
 		super(options);
 
 		this.server = tcp.createServer();

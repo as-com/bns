@@ -14,7 +14,7 @@ import * as schema from "./schema";
  * Lazy Require
  */
 
-function lazy(_, name: string) {
+export default function lazy(_, name: string) {
 	// assert(typeof name === 'string');
 
 	switch (name) {
@@ -28,9 +28,3 @@ function lazy(_, name: string) {
 
 	throw new Error(`Unknown module: ${name}.`);
 }
-
-/*
- * Expose
- */
-
-export default lazy;

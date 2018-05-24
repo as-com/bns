@@ -138,43 +138,25 @@ let optsByVal = {};
  */
 
 class Message extends Struct {
-	id: number;
-	flags: number;
-	opcode: Opcode;
-	code: Code;
-	question: Question[];
-	answer: Record[];
-	authority: Record[];
-	additional: Record[];
-	edns: EDNS;
-	tsig: Record | null;
-	sig0: Record | null;
-	size: number;
-	malformed: boolean;
-	trailing: Buffer;
+	id = 0;
+	flags = 0;
+	opcode = Opcode.QUERY;
+	code = Code.NOERROR;
+	question: Question[] = [];
+	answer: Record[] = [];
+	authority: Record[] = [];
+	additional: Record[] = [];
 
-	constructor() {
-		super();
+	// Pseudo sections.
+	edns = new EDNS();
+	tsig: Record | null = null;
+	sig0: Record | null = null;
 
-		this.id = 0;
-		this.flags = 0;
-		this.opcode = Opcode.QUERY;
-		this.code = Code.NOERROR;
-		this.question = [];
-		this.answer = [];
-		this.authority = [];
-		this.additional = [];
+	// Extra properties.
+	size: number = 0;
+	malformed = false;
+	trailing = DUMMY;
 
-		// Pseudo sections.
-		this.edns = new EDNS();
-		this.tsig = null;
-		this.sig0 = null;
-
-		// Extra properties.
-		this.size = 0;
-		this.malformed = false;
-		this.trailing = DUMMY;
-	}
 
 	inject(msg: Struct): this {
 		assert(msg instanceof Message);
@@ -1381,23 +1363,13 @@ class Message extends Struct {
  */
 
 class EDNS extends Struct {
-	enabled: boolean;
-	size: number;
-	code: number;
-	version: number;
-	flags: number;
-	options: any[];
+	enabled = false;
+	size = MAX_UDP_SIZE;
+	code = 0;
+	version = 0;
+	flags = 0;
+	options: any[] = [];
 
-	constructor() {
-		super();
-
-		this.enabled = false;
-		this.size = MAX_UDP_SIZE;
-		this.code = 0;
-		this.version = 0;
-		this.flags = 0;
-		this.options = [];
-	}
 
 	inject(edns: EDNS) {
 		// assert(edns instanceof this.constructor);
@@ -1691,18 +1663,11 @@ class EDNS extends Struct {
  */
 
 class Question extends Struct {
-	name: string;
 	type: RecordType;
-	class: QuestionClass;
+	class = QuestionClass.IN;
 
-	constructor(name?: string, type?: RecordType | string) {
+	constructor(public name: string = "", type: RecordType | string = RecordType.ANY) {
 		super();
-
-		if (name == null)
-			name = '';
-
-		if (type == null)
-			type = RecordType.ANY;
 
 		if (typeof type === 'string')
 			type = stringToType(type);
@@ -1712,11 +1677,10 @@ class Question extends Struct {
 
 		this.name = util.fqdn(name);
 		this.type = type;
-		this.class = QuestionClass.IN;
 	}
 
-	equals(qs) {
-		assert(qs instanceof Question);
+	equals(qs: Question) {
+		// assert(qs instanceof Question);
 		return util.equal(this.name, qs.name)
 			&& this.type === qs.type
 			&& this.class === qs.class;
@@ -1814,20 +1778,12 @@ class Question extends Struct {
  */
 
 class Record<T extends RecordData = RecordData> extends Struct {
-	name: string;
-	type: RecordType;
-	class: QuestionClass;
-	ttl: number;
-	data: T;
+	name = ".";
+	type = RecordType.UNKNOWN;
+	class = QuestionClass.IN;
+	ttl = 0;
+	data: T = new UNKNOWNRecord() as any;
 
-	constructor() {
-		super();
-		this.name = '.';
-		this.type = RecordType.UNKNOWN;
-		this.class = QuestionClass.IN;
-		this.ttl = 0;
-		this.data = new UNKNOWNRecord() as any;
-	}
 
 	inject(rr) {
 		assert(rr instanceof this.constructor);
@@ -1985,9 +1941,6 @@ class Record<T extends RecordData = RecordData> extends Struct {
 class RecordData extends Struct {
 	typeCovered: number;
 
-	constructor() {
-		super();
-	}
 
 	get type() {
 		return RecordType.UNKNOWN;
@@ -2034,12 +1987,8 @@ class RecordData extends Struct {
  */
 
 class UNKNOWNRecord extends RecordData {
-	data: Buffer;
+	data = DUMMY;
 
-	constructor() {
-		super();
-		this.data = DUMMY;
-	}
 
 	get type() {
 		return RecordType.UNKNOWN;
@@ -2067,12 +2016,8 @@ class UNKNOWNRecord extends RecordData {
  */
 
 class ARecord extends RecordData {
-	address: string;
+	address = '0.0.0.0';
 
-	constructor() {
-		super();
-		this.address = '0.0.0.0';
-	}
 
 	get type() {
 		return RecordType.A;
@@ -2100,12 +2045,8 @@ class ARecord extends RecordData {
  */
 
 class NSRecord extends RecordData {
-	ns: string;
+	ns = ".";
 
-	constructor() {
-		super();
-		this.ns = '.';
-	}
 
 	get type() {
 		return RecordType.NS;
@@ -2139,12 +2080,8 @@ class NSRecord extends RecordData {
  */
 
 class MDRecord extends RecordData {
-	md: string;
+	md = ".";
 
-	constructor() {
-		super();
-		this.md = '.';
-	}
 
 	get type() {
 		return RecordType.MD;
@@ -2178,12 +2115,8 @@ class MDRecord extends RecordData {
  */
 
 class MFRecord extends RecordData {
-	mf: string;
+	mf = ".";
 
-	constructor() {
-		super();
-		this.mf = '.';
-	}
 
 	get type() {
 		return RecordType.MF;
@@ -2216,12 +2149,8 @@ class MFRecord extends RecordData {
  */
 
 class CNAMERecord extends RecordData {
-	target: string;
+	target = ".";
 
-	constructor() {
-		super();
-		this.target = '.';
-	}
 
 	get type() {
 		return RecordType.CNAME;
@@ -2255,24 +2184,14 @@ class CNAMERecord extends RecordData {
  */
 
 class SOARecord extends RecordData {
-	ns: string;
-	mbox: string;
-	serial: number;
-	refresh: number;
-	retry: number;
-	expire: number;
-	minttl: number;
+	ns = '.';
+	mbox = '.';
+	serial = 0;
+	refresh = 0;
+	retry = 0;
+	expire = 0;
+	minttl = 0;
 
-	constructor() {
-		super();
-		this.ns = '.';
-		this.mbox = '.';
-		this.serial = 0;
-		this.refresh = 0;
-		this.retry = 0;
-		this.expire = 0;
-		this.minttl = 0;
-	}
 
 	get type() {
 		return RecordType.SOA;
@@ -2324,12 +2243,8 @@ class SOARecord extends RecordData {
  */
 
 class MBRecord extends RecordData {
-	mb: string;
+	mb = ".";
 
-	constructor() {
-		super();
-		this.mb = '.';
-	}
 
 	get type() {
 		return RecordType.MB;
@@ -2364,12 +2279,8 @@ class MBRecord extends RecordData {
  */
 
 class MGRecord extends RecordData {
-	mg: string;
+	mg = ".";
 
-	constructor() {
-		super();
-		this.mg = '.';
-	}
 
 	get type() {
 		return RecordType.MG;
@@ -2404,12 +2315,8 @@ class MGRecord extends RecordData {
  */
 
 class MRRecord extends RecordData {
-	mr: string;
+	mr = ".";
 
-	constructor() {
-		super();
-		this.mr = '.';
-	}
 
 	get type() {
 		return RecordType.MR;
@@ -2443,9 +2350,6 @@ class MRRecord extends RecordData {
  */
 
 class NULLRecord extends UNKNOWNRecord {
-	constructor() {
-		super();
-	}
 
 	get type() {
 		return RecordType.NULL;
@@ -2462,16 +2366,10 @@ class NULLRecord extends UNKNOWNRecord {
  */
 
 class WKSRecord extends RecordData {
-	address: string;
-	protocol: number;
-	bitmap: Buffer;
+	address = "0.0.0.0";
+	protocol = 0;
+	bitmap = DUMMY;
 
-	constructor() {
-		super();
-		this.address = '0.0.0.0';
-		this.protocol = 0;
-		this.bitmap = DUMMY;
-	}
 
 	get type() {
 		return RecordType.WKS;
@@ -2516,12 +2414,8 @@ class WKSRecord extends RecordData {
  */
 
 class PTRRecord extends RecordData {
-	ptr: string;
+	ptr = ".";
 
-	constructor() {
-		super();
-		this.ptr = '.';
-	}
 
 	get type() {
 		return RecordType.PTR;
@@ -2554,14 +2448,9 @@ class PTRRecord extends RecordData {
  */
 
 class HINFORecord extends RecordData {
-	cpu: string;
-	os: string;
+	cpu = "";
+	os = "";
 
-	constructor() {
-		super();
-		this.cpu = '';
-		this.os = '';
-	}
 
 	get type() {
 		return RecordType.HINFO;
@@ -2596,14 +2485,9 @@ class HINFORecord extends RecordData {
  */
 
 class MINFORecord extends RecordData {
-	rmail: string;
-	email: string;
+	rmail = ".";
+	email = ".";
 
-	constructor() {
-		super();
-		this.rmail = '.';
-		this.email = '.';
-	}
 
 	get type() {
 		return RecordType.MINFO;
@@ -2643,14 +2527,9 @@ class MINFORecord extends RecordData {
  */
 
 class MXRecord extends RecordData {
-	preference: number;
-	mx: string;
+	preference = 0;
+	mx = ".";
 
-	constructor() {
-		super();
-		this.preference = 0;
-		this.mx = '.';
-	}
 
 	get type() {
 		return RecordType.MX;
@@ -2685,12 +2564,8 @@ class MXRecord extends RecordData {
  */
 
 class TXTRecord extends RecordData {
-	private txt: string[];
+	private txt: string[] = [];
 
-	constructor() {
-		super();
-		this.txt = [];
-	}
 
 	get type() {
 		return RecordType.TXT;
@@ -2723,14 +2598,9 @@ class TXTRecord extends RecordData {
  */
 
 class RPRecord extends RecordData {
-	mbox: string;
-	txt: string;
+	mbox = ".";
+	txt = ".";
 
-	constructor() {
-		super();
-		this.mbox = '.';
-		this.txt = '.';
-	}
 
 	get type() {
 		return RecordType.RP;
@@ -2769,14 +2639,9 @@ class RPRecord extends RecordData {
  */
 
 class AFSDBRecord extends RecordData {
-	subtype: number;
-	hostname: string;
+	subtype = 0;
+	hostname = ".";
 
-	constructor() {
-		super();
-		this.subtype = 0;
-		this.hostname = '.';
-	}
 
 	get type() {
 		return RecordType.AFSDB;
@@ -2811,12 +2676,8 @@ class AFSDBRecord extends RecordData {
  */
 
 class X25Record extends RecordData {
-	psdnAddress: string;
+	psdnAddress = "";
 
-	constructor() {
-		super();
-		this.psdnAddress = '';
-	}
 
 	get type() {
 		return RecordType.X25;
@@ -2844,14 +2705,9 @@ class X25Record extends RecordData {
  */
 
 class ISDNRecord extends RecordData {
-	address: string;
-	sa: string;
+	address = "";
+	sa = "";
 
-	constructor() {
-		super();
-		this.address = '';
-		this.sa = '';
-	}
 
 	get type() {
 		return RecordType.ISDN;
@@ -2884,14 +2740,9 @@ class ISDNRecord extends RecordData {
  */
 
 class RTRecord extends RecordData {
-	preference: number;
-	host: string;
+	preference = 0;
+	host = ".";
 
-	constructor() {
-		super();
-		this.preference = 0;
-		this.host = '.';
-	}
 
 	get type() {
 		return RecordType.RT;
@@ -2926,12 +2777,8 @@ class RTRecord extends RecordData {
  */
 
 class NSAPRecord extends RecordData {
-	nsap: Buffer;
+	nsap = DUMMY;
 
-	constructor() {
-		super();
-		this.nsap = DUMMY;
-	}
 
 	get type() {
 		return RecordType.NSAP;
@@ -2959,9 +2806,6 @@ class NSAPRecord extends RecordData {
  */
 
 class NSAPPTRRecord extends PTRRecord {
-	constructor() {
-		super();
-	}
 
 	get type() {
 		return RecordType.NSAPPTR;
@@ -2976,27 +2820,16 @@ class NSAPPTRRecord extends PTRRecord {
  */
 
 class SIGRecord extends RecordData {
-	algorithm: number;
-	labels: number;
-	origTTL: number;
-	expiration: number;
-	inception: number;
-	keyTag: number;
-	signerName: string;
-	signature: Buffer;
+	typeCovered = 0;
+	algorithm = 0;
+	labels = 0;
+	origTTL = 0;
+	expiration = 0;
+	inception = 0;
+	keyTag = 0;
+	signerName = '.';
+	signature = DUMMY;
 
-	constructor() {
-		super();
-		this.typeCovered = 0;
-		this.algorithm = 0;
-		this.labels = 0;
-		this.origTTL = 0;
-		this.expiration = 0;
-		this.inception = 0;
-		this.keyTag = 0;
-		this.signerName = '.';
-		this.signature = DUMMY;
-	}
 
 	get type() {
 		return RecordType.SIG;
@@ -3094,18 +2927,11 @@ class SIGRecord extends RecordData {
  */
 
 class KEYRecord extends RecordData {
-	flags: number;
-	protocol: number;
-	algorithm: number;
-	publicKey: Buffer;
+	flags = 0;
+	protocol = 0;
+	algorithm = 0;
+	publicKey = DUMMY;
 
-	constructor() {
-		super();
-		this.flags = 0;
-		this.protocol = 0;
-		this.algorithm = 0;
-		this.publicKey = DUMMY;
-	}
 
 	get type() {
 		return RecordType.KEY;
@@ -3206,16 +3032,10 @@ class KEYRecord extends RecordData {
  */
 
 class PXRecord extends RecordData {
-	preference: number;
-	map822: string;
-	mapx400: string;
+	preference = 0;
+	map822 = ".";
+	mapx400 = ".";
 
-	constructor() {
-		super();
-		this.preference = 0;
-		this.map822 = '.';
-		this.mapx400 = '.';
-	}
 
 	get type() {
 		return RecordType.PX;
@@ -3257,9 +3077,9 @@ class PXRecord extends RecordData {
  */
 
 class GPOSRecord extends RecordData {
-	longitude: string;
-	latitude: string;
-	altitude: string;
+	longitude = "";
+	latitude = "";
+	altitude = "";
 
 	constructor() {
 		super();
@@ -3302,12 +3122,8 @@ class GPOSRecord extends RecordData {
  */
 
 class AAAARecord extends RecordData {
-	address: string;
+	address = "::";
 
-	constructor() {
-		super();
-		this.address = '::';
-	}
 
 	get type() {
 		return RecordType.AAAA;
@@ -3335,24 +3151,14 @@ class AAAARecord extends RecordData {
  */
 
 class LOCRecord extends RecordData {
-	version: number;
-	size: number;
-	horizPre: number;
-	vertPre: number;
-	latitude: number;
-	longitude: number;
-	altitude: number;
+	version = 0;
+	size = 0;
+	horizPre = 0;
+	vertPre = 0;
+	latitude = 0;
+	longitude = 0;
+	altitude = 0;
 
-	constructor() {
-		super();
-		this.version = 0;
-		this.size = 0;
-		this.horizPre = 0;
-		this.vertPre = 0;
-		this.latitude = 0;
-		this.longitude = 0;
-		this.altitude = 0;
-	}
 
 	get type() {
 		return RecordType.LOC;
@@ -3394,14 +3200,9 @@ class LOCRecord extends RecordData {
  */
 
 class NXTRecord extends RecordData {
-	nextDomain: string;
-	typeBitmap: Buffer;
+	nextDomain = ".";
+	typeBitmap = DUMMY;
 
-	constructor() {
-		super();
-		this.nextDomain = '.';
-		this.typeBitmap = DUMMY;
-	}
 
 	get type() {
 		return RecordType.NXT;
@@ -3452,12 +3253,8 @@ class NXTRecord extends RecordData {
  */
 
 class EIDRecord extends RecordData {
-	endpoint: Buffer;
+	endpoint = DUMMY;
 
-	constructor() {
-		super();
-		this.endpoint = DUMMY;
-	}
 
 	get type() {
 		return RecordType.EID;
@@ -3485,12 +3282,8 @@ class EIDRecord extends RecordData {
  */
 
 class NIMLOCRecord extends RecordData {
-	locator: Buffer;
+	locator = DUMMY;
 
-	constructor() {
-		super();
-		this.locator = DUMMY;
-	}
 
 	get type() {
 		return RecordType.NIMLOC;
@@ -3518,18 +3311,11 @@ class NIMLOCRecord extends RecordData {
  */
 
 class SRVRecord extends RecordData {
-	priority: number;
-	weight: number;
-	port: number;
-	target: string;
+	priority = 0;
+	weight = 0;
+	port = 0;
+	target = '.';
 
-	constructor() {
-		super();
-		this.priority = 0;
-		this.weight = 0;
-		this.port = 0;
-		this.target = '.';
-	}
 
 	get type() {
 		return RecordType.SRV;
@@ -3569,12 +3355,11 @@ class SRVRecord extends RecordData {
 
 class ATMARecord extends RecordData {
 	// format: number; // TODO
-	address: Buffer;
+	address = DUMMY;
 
 	constructor() {
 		super();
 		// this.format = 0;
-		this.address = DUMMY;
 	}
 
 	get type() {
@@ -3605,22 +3390,13 @@ class ATMARecord extends RecordData {
  */
 
 class NAPTRRecord extends RecordData {
-	order: number;
-	preference: number;
-	flags: string;
-	service: string;
-	regexp: string;
-	replacement: string;
+	order = 0;
+	preference = 0;
+	flags = '';
+	service = '';
+	regexp = '';
+	replacement = '.';
 
-	constructor() {
-		super();
-		this.order = 0;
-		this.preference = 0;
-		this.flags = '';
-		this.service = '';
-		this.regexp = '';
-		this.replacement = '.';
-	}
 
 	get type() {
 		return RecordType.NAPTR;
@@ -3669,14 +3445,9 @@ class NAPTRRecord extends RecordData {
  */
 
 class KXRecord extends RecordData {
-	preference: number;
-	exchanger: string;
+	preference = 0;
+	exchanger = '.';
 
-	constructor() {
-		super();
-		this.preference = 0;
-		this.exchanger = '.';
-	}
 
 	get type() {
 		return RecordType.KX;
@@ -3711,18 +3482,11 @@ class KXRecord extends RecordData {
  */
 
 class CERTRecord extends RecordData {
-	certType: number;
-	keyTag: number;
-	algorithm: number;
-	certificate: Buffer;
+	certType = 0;
+	keyTag = 0;
+	algorithm = 0;
+	certificate = DUMMY;
 
-	constructor() {
-		super();
-		this.certType = 0;
-		this.keyTag = 0;
-		this.algorithm = 0;
-		this.certificate = DUMMY;
-	}
 
 	get type() {
 		return RecordType.CERT;
@@ -3785,16 +3549,10 @@ class CERTRecord extends RecordData {
  */
 
 class A6Record extends RecordData {
-	prefixLen: number;
-	address: string;
-	prefix: string;
+	prefixLen = 0;
+	address = '::';
+	prefix = '.';
 
-	constructor() {
-		super();
-		this.prefixLen = 0;
-		this.address = '::';
-		this.prefix = '.';
-	}
 
 	get type() {
 		return RecordType.A6;
@@ -3863,9 +3621,6 @@ class A6Record extends RecordData {
  */
 
 class DNAMERecord extends CNAMERecord {
-	constructor() {
-		super();
-	}
 
 	get type() {
 		return RecordType.DNAME;
@@ -3879,12 +3634,8 @@ class DNAMERecord extends CNAMERecord {
  */
 
 class OPTRecord extends RecordData {
-	options: Option[];
+	options: Option[] = [];
 
-	constructor() {
-		super();
-		this.options = [];
-	}
 
 	get type() {
 		return RecordType.OPT;
@@ -3948,12 +3699,8 @@ class OPTRecord extends RecordData {
  */
 
 class APLRecord extends RecordData {
-	items: AP[];
+	items: AP[] = [];
 
-	constructor() {
-		super();
-		this.items = [];
-	}
 
 	get type() {
 		return RecordType.APL;
@@ -3990,18 +3737,11 @@ class APLRecord extends RecordData {
  */
 
 class DSRecord extends RecordData {
-	keyTag: number;
-	algorithm: number;
-	digestType: number;
-	digest: Buffer;
+	keyTag = 0;
+	algorithm = 0;
+	digestType = 0;
+	digest = DUMMY;
 
-	constructor() {
-		super();
-		this.keyTag = 0;
-		this.algorithm = 0;
-		this.digestType = 0;
-		this.digest = DUMMY;
-	}
 
 	get type() {
 		return RecordType.DS;
@@ -4056,16 +3796,10 @@ class DSRecord extends RecordData {
  */
 
 class SSHFPRecord extends RecordData {
-	algorithm: number;
-	digestType: number;
-	fingerprint: Buffer;
+	algorithm = 0;
+	digestType = 0;
+	fingerprint = DUMMY;
 
-	constructor() {
-		super();
-		this.algorithm = 0;
-		this.digestType = 0;
-		this.fingerprint = DUMMY;
-	}
 
 	get type() {
 		return RecordType.SSHFP;
@@ -4128,20 +3862,12 @@ class SSHFPRecord extends RecordData {
  */
 
 class IPSECKEYRecord extends RecordData {
-	precedence: number;
-	gatewayType: number;
-	algorithm: number;
-	target: string;
-	publicKey: Buffer;
+	precedence = 0;
+	gatewayType = 1;
+	algorithm = 0;
+	target = '0.0.0.0';
+	publicKey = DUMMY;
 
-	constructor() {
-		super();
-		this.precedence = 0;
-		this.gatewayType = 1;
-		this.algorithm = 0;
-		this.target = '0.0.0.0';
-		this.publicKey = DUMMY;
-	}
 
 	get type() {
 		return RecordType.IPSECKEY;
@@ -4228,9 +3954,6 @@ class IPSECKEYRecord extends RecordData {
  */
 
 class RRSIGRecord extends SIGRecord {
-	constructor() {
-		super();
-	}
 
 	get type() {
 		return RecordType.RRSIG;
@@ -4244,14 +3967,9 @@ class RRSIGRecord extends SIGRecord {
  */
 
 class NSECRecord extends RecordData {
-	nextDomain: string;
-	typeBitmap: Buffer;
+	nextDomain = ".";
+	typeBitmap = DUMMY;
 
-	constructor() {
-		super();
-		this.nextDomain = '.';
-		this.typeBitmap = DUMMY;
-	}
 
 	get type() {
 		return RecordType.NSEC;
@@ -4302,9 +4020,6 @@ class NSECRecord extends RecordData {
  */
 
 class DNSKEYRecord extends KEYRecord {
-	constructor() {
-		super();
-	}
 
 	get type() {
 		return RecordType.DNSKEY;
@@ -4318,12 +4033,8 @@ class DNSKEYRecord extends KEYRecord {
  */
 
 class DHCIDRecord extends RecordData {
-	digest: Buffer;
+	digest = DUMMY;
 
-	constructor() {
-		super();
-		this.digest = DUMMY;
-	}
 
 	get type() {
 		return RecordType.DHCID;
@@ -4351,22 +4062,13 @@ class DHCIDRecord extends RecordData {
  */
 
 class NSEC3Record extends RecordData {
-	hash: number;
-	flags: number;
-	iterations: number;
-	salt: Buffer;
-	nextDomain: Buffer;
-	typeBitmap: Buffer;
+	hash = 0;
+	flags = 0;
+	iterations = 0;
+	salt = DUMMY;
+	nextDomain = DUMMY;
+	typeBitmap = DUMMY;
 
-	constructor() {
-		super();
-		this.hash = 0;
-		this.flags = 0;
-		this.iterations = 0;
-		this.salt = DUMMY;
-		this.nextDomain = DUMMY;
-		this.typeBitmap = DUMMY;
-	}
 
 	get type() {
 		return RecordType.NSEC3;
@@ -4447,18 +4149,11 @@ class NSEC3Record extends RecordData {
  */
 
 class NSEC3PARAMRecord extends RecordData {
-	hash: number;
-	flags: number;
-	iterations: number;
-	salt: Buffer;
+	hash = 0;
+	flags = 0;
+	iterations = 0;
+	salt = DUMMY;
 
-	constructor() {
-		super();
-		this.hash = 0;
-		this.flags = 0;
-		this.iterations = 0;
-		this.salt = DUMMY;
-	}
 
 	get type() {
 		return RecordType.NSEC3PARAM;
@@ -4516,18 +4211,11 @@ class NSEC3PARAMRecord extends RecordData {
  */
 
 class TLSARecord extends RecordData {
-	usage: number;
-	selector: number;
-	matchingType: number;
-	certificate: Buffer;
+	usage = 0;
+	selector = 0;
+	matchingType = 0;
+	certificate = DUMMY;
 
-	constructor() {
-		super();
-		this.usage = 0;
-		this.selector = 0;
-		this.matchingType = 0;
-		this.certificate = DUMMY;
-	}
 
 	get type() {
 		return RecordType.TLSA;
@@ -4600,9 +4288,6 @@ class TLSARecord extends RecordData {
  */
 
 class SMIMEARecord extends TLSARecord {
-	constructor() {
-		super();
-	}
 
 	get type() {
 		return RecordType.SMIMEA;
@@ -4616,18 +4301,11 @@ class SMIMEARecord extends TLSARecord {
  */
 
 class HIPRecord extends RecordData {
-	algorithm: number;
-	hit: Buffer;
-	publicKey: Buffer;
-	servers: string[];
+	algorithm = 0;
+	hit = DUMMY;
+	publicKey = DUMMY;
+	servers: string[] = [];
 
-	constructor() {
-		super();
-		this.algorithm = 0;
-		this.hit = DUMMY;
-		this.publicKey = DUMMY;
-		this.servers = [];
-	}
 
 	get type() {
 		return RecordType.HIP;
@@ -4686,11 +4364,7 @@ class HIPRecord extends RecordData {
  */
 
 class NINFORecord extends RecordData {
-	zsData: any[]; // TODO
-	constructor() {
-		super();
-		this.zsData = [];
-	}
+	zsData: any[] = []; // TODO
 
 	get type() {
 		return RecordType.NINFO;
@@ -4724,9 +4398,6 @@ class NINFORecord extends RecordData {
  */
 
 class RKEYRecord extends KEYRecord {
-	constructor() {
-		super();
-	}
 
 	get type() {
 		return RecordType.RKEY;
@@ -4741,14 +4412,9 @@ class RKEYRecord extends KEYRecord {
  */
 
 class TALINKRecord extends RecordData {
-	prevName: string;
-	nextName: string;
+	prevName = '.';
+	nextName = '.';
 
-	constructor() {
-		super();
-		this.prevName = '.';
-		this.nextName = '.';
-	}
 
 	get type() {
 		return RecordType.TALINK;
@@ -4788,9 +4454,6 @@ class TALINKRecord extends RecordData {
  */
 
 class CDSRecord extends DSRecord {
-	constructor() {
-		super();
-	}
 
 	get type() {
 		return RecordType.CDS;
@@ -4804,9 +4467,6 @@ class CDSRecord extends DSRecord {
  */
 
 class CDNSKEYRecord extends KEYRecord {
-	constructor() {
-		super();
-	}
 
 	get type() {
 		return RecordType.CDNSKEY;
@@ -4820,12 +4480,8 @@ class CDNSKEYRecord extends KEYRecord {
  */
 
 class OPENPGPKEYRecord extends RecordData {
-	publicKey: Buffer;
+	publicKey = DUMMY;
 
-	constructor() {
-		super();
-		this.publicKey = DUMMY;
-	}
 
 	get type() {
 		return RecordType.OPENPGPKEY;
@@ -4853,16 +4509,10 @@ class OPENPGPKEYRecord extends RecordData {
  */
 
 class CSYNCRecord extends RecordData {
-	serial: number;
-	flags: number;
-	typeBitmap: Buffer;
+	serial = 0;
+	flags = 0;
+	typeBitmap = DUMMY;
 
-	constructor() {
-		super();
-		this.serial = 0;
-		this.flags = 0;
-		this.typeBitmap = DUMMY;
-	}
 
 	get type() {
 		return RecordType.CSYNC;
@@ -4908,9 +4558,6 @@ class CSYNCRecord extends RecordData {
  */
 
 class SPFRecord extends TXTRecord {
-	constructor() {
-		super();
-	}
 
 	get type() {
 		return RecordType.SPF;
@@ -4924,12 +4571,8 @@ class SPFRecord extends TXTRecord {
  */
 
 class UINFORecord extends RecordData {
-	uinfo: string;
+	uinfo = "";
 
-	constructor() {
-		super();
-		this.uinfo = '';
-	}
 
 	get type() {
 		return RecordType.UINFO;
@@ -4957,12 +4600,8 @@ class UINFORecord extends RecordData {
  */
 
 class UIDRecord extends RecordData {
-	uid: number;
+	uid = 0;
 
-	constructor() {
-		super();
-		this.uid = 0;
-	}
 
 	get type() {
 		return RecordType.UID;
@@ -4990,12 +4629,8 @@ class UIDRecord extends RecordData {
  */
 
 class GIDRecord extends RecordData {
-	gid: number;
+	gid = 0;
 
-	constructor() {
-		super();
-		this.gid = 0;
-	}
 
 	get type() {
 		return RecordType.GID;
@@ -5023,9 +4658,6 @@ class GIDRecord extends RecordData {
  */
 
 class UNSPECRecord extends UNKNOWNRecord {
-	constructor() {
-		super();
-	}
 
 	get type() {
 		return RecordType.UNSPEC;
@@ -5039,14 +4671,9 @@ class UNSPECRecord extends UNKNOWNRecord {
  */
 
 class NIDRecord extends RecordData {
-	preference: number;
-	nodeID: Buffer;
+	preference = 0;
+	nodeID = DUMMY8;
 
-	constructor() {
-		super();
-		this.preference = 0;
-		this.nodeID = DUMMY8;
-	}
 
 	get type() {
 		return RecordType.NID;
@@ -5076,14 +4703,9 @@ class NIDRecord extends RecordData {
  */
 
 class L32Record extends RecordData {
-	preference: number;
-	locator32: Buffer;
+	preference = 0;
+	locator32 = DUMMY4;
 
-	constructor() {
-		super();
-		this.preference = 0;
-		this.locator32 = DUMMY4;
-	}
 
 	get type() {
 		return RecordType.L32;
@@ -5113,8 +4735,8 @@ class L32Record extends RecordData {
  */
 
 class L64Record extends RecordData {
-	preference: number;
-	locator64: Buffer;
+	preference = 0;
+	locator64 = DUMMY8;
 
 	constructor() {
 		super();
@@ -5150,14 +4772,9 @@ class L64Record extends RecordData {
  */
 
 class LPRecord extends RecordData {
-	preference: number;
-	fqdn: string;
+	preference = 0;
+	fqdn = ".";
 
-	constructor() {
-		super();
-		this.preference = 0;
-		this.fqdn = '.';
-	}
 
 	get type() {
 		return RecordType.LP;
@@ -5193,12 +4810,8 @@ class LPRecord extends RecordData {
  */
 
 class EUI48Record extends RecordData {
-	address: Buffer;
+	address = DUMMY6;
 
-	constructor() {
-		super();
-		this.address = DUMMY6;
-	}
 
 	get type() {
 		return RecordType.EUI48;
@@ -5226,12 +4839,8 @@ class EUI48Record extends RecordData {
  */
 
 class EUI64Record extends RecordData {
-	address: Buffer;
+	address = DUMMY8;
 
-	constructor() {
-		super();
-		this.address = DUMMY8;
-	}
 
 	get type() {
 		return RecordType.EUI64;
@@ -5259,24 +4868,14 @@ class EUI64Record extends RecordData {
  */
 
 class TKEYRecord extends RecordData {
-	algorithm: string;
-	inception: number;
-	expiration: number;
-	mode: number;
-	error: number;
-	key: Buffer;
-	other: Buffer;
+	algorithm = '.';
+	inception = 0;
+	expiration = 0;
+	mode = 0;
+	error = 0;
+	key = DUMMY;
+	other = DUMMY;
 
-	constructor() {
-		super();
-		this.algorithm = '.';
-		this.inception = 0;
-		this.expiration = 0;
-		this.mode = 0;
-		this.error = 0;
-		this.key = DUMMY;
-		this.other = DUMMY;
-	}
 
 	get type() {
 		return RecordType.TKEY;
@@ -5329,24 +4928,14 @@ class TKEYRecord extends RecordData {
  */
 
 class TSIGRecord extends RecordData {
-	algorithm: string;
-	timeSigned: number;
-	fudge: number;
-	mac: Buffer;
-	origID: number;
-	error: number;
-	other: Buffer;
+	algorithm = '.';
+	timeSigned = 0;
+	fudge = 0;
+	mac = DUMMY;
+	origID = 0;
+	error = 0;
+	other = DUMMY;
 
-	constructor() {
-		super();
-		this.algorithm = '.';
-		this.timeSigned = 0;
-		this.fudge = 0;
-		this.mac = DUMMY;
-		this.origID = 0;
-		this.error = 0;
-		this.other = DUMMY;
-	}
 
 	get type() {
 		return RecordType.TSIG;
@@ -5424,16 +5013,10 @@ class TSIGRecord extends RecordData {
  */
 
 class URIRecord extends RecordData {
-	priority: number;
-	weight: number;
-	target: string;
+	priority = 0;
+	weight = 0;
+	target = '';
 
-	constructor() {
-		super();
-		this.priority = 0;
-		this.weight = 0;
-		this.target = '';
-	}
 
 	get type() {
 		return RecordType.URI;
@@ -5465,16 +5048,10 @@ class URIRecord extends RecordData {
  */
 
 class CAARecord extends RecordData {
-	flag: number;
-	tag: string;
-	value: string;
+	flag = 0;
+	tag = '';
+	value = '';
 
-	constructor() {
-		super();
-		this.flag = 0;
-		this.tag = '';
-		this.value = '';
-	}
 
 	get type() {
 		return RecordType.CAA;
@@ -5510,9 +5087,6 @@ class CAARecord extends RecordData {
  */
 
 class AVCRecord extends TXTRecord {
-	constructor() {
-		super();
-	}
 
 	get type() {
 		return RecordType.AVC;
@@ -5526,20 +5100,12 @@ class AVCRecord extends TXTRecord {
  */
 
 class DOARecord extends RecordData {
-	enterprise: number;
-	doa: number;
-	location: number;
-	mediaType: string;
-	data: Buffer;
+	enterprise = 0;
+	doa = 0;
+	location = 0;
+	mediaType = '';
+	data = DUMMY;
 
-	constructor() {
-		super();
-		this.enterprise = 0;
-		this.doa = 0;
-		this.location = 0;
-		this.mediaType = '';
-		this.data = DUMMY;
-	}
 
 	get type() {
 		return RecordType.DOA;
@@ -5579,18 +5145,11 @@ class DOARecord extends RecordData {
  */
 
 class TARecord extends RecordData {
-	keyTag: number;
-	algorithm: number;
-	digestType: number;
-	digest: Buffer;
+	keyTag = 0;
+	algorithm = 0;
+	digestType = 0;
+	digest = DUMMY;
 
-	constructor() {
-		super();
-		this.keyTag = 0;
-		this.algorithm = 0;
-		this.digestType = 0;
-		this.digest = DUMMY;
-	}
 
 	get type() {
 		return RecordType.TA;
@@ -5624,9 +5183,6 @@ class TARecord extends RecordData {
  */
 
 class DLVRecord extends DSRecord {
-	constructor() {
-		super();
-	}
 
 	get type() {
 		return RecordType.DLV;
@@ -5639,14 +5195,9 @@ class DLVRecord extends DSRecord {
  */
 
 class Option extends Struct {
-	code: number;
-	option: OptionData;
+	code = 0;
+	option: OptionData = new UNKNOWNOption();
 
-	constructor() {
-		super();
-		this.code = 0;
-		this.option = new UNKNOWNOption();
-	}
 
 	canonical() {
 		// Note: not mentioned in RFC 4034.
@@ -5746,9 +5297,6 @@ class Option extends Struct {
  */
 
 class OptionData extends Struct {
-	constructor() {
-		super();
-	}
 
 	get code() {
 		return EOption.RESERVED;
@@ -5796,12 +5344,8 @@ class OptionData extends Struct {
  */
 
 class UNKNOWNOption extends OptionData {
-	data: Buffer;
+	data = DUMMY;
 
-	constructor() {
-		super();
-		this.data = DUMMY;
-	}
 
 	get code() {
 		return EOption.RESERVED;
@@ -5829,20 +5373,12 @@ class UNKNOWNOption extends OptionData {
  */
 
 class LLQOption extends OptionData {
-	version: number;
-	opcode: number;
-	error: number;
-	id: Buffer;
-	leaseLife: number;
+	version = 0;
+	opcode = 0;
+	error = 0;
+	id = DUMMY8;
+	leaseLife = 0;
 
-	constructor() {
-		super();
-		this.version = 0;
-		this.opcode = 0;
-		this.error = 0;
-		this.id = DUMMY8;
-		this.leaseLife = 0;
-	}
 
 	get code() {
 		return EOption.LLQ;
@@ -5878,12 +5414,8 @@ class LLQOption extends OptionData {
  */
 
 class ULOption extends OptionData {
-	lease: number;
+	lease = 0;
 
-	constructor() {
-		super();
-		this.lease = 0;
-	}
 
 	get code() {
 		return EOption.UL;
@@ -5911,12 +5443,8 @@ class ULOption extends OptionData {
  */
 
 class NSIDOption extends OptionData {
-	nsid: Buffer;
+	nsid = DUMMY;
 
-	constructor() {
-		super();
-		this.nsid = DUMMY;
-	}
 
 	get code() {
 		return EOption.NSID;
@@ -5944,12 +5472,8 @@ class NSIDOption extends OptionData {
  */
 
 class DAUOption extends OptionData {
-	algCode: Buffer;
+	algCode = DUMMY;
 
-	constructor() {
-		super();
-		this.algCode = DUMMY;
-	}
 
 	get code() {
 		return EOption.DAU;
@@ -5977,9 +5501,6 @@ class DAUOption extends OptionData {
  */
 
 class DHUOption extends DAUOption {
-	constructor() {
-		super();
-	}
 
 	get code() {
 		return EOption.DHU;
@@ -5993,9 +5514,6 @@ class DHUOption extends DAUOption {
  */
 
 class N3UOption extends DAUOption {
-	constructor() {
-		super();
-	}
 
 	get code() {
 		return EOption.N3U;
@@ -6009,20 +5527,12 @@ class N3UOption extends DAUOption {
  */
 
 class SUBNETOption extends OptionData {
-	family: number;
-	sourceNetmask: number;
-	sourceScope: number;
-	address: string;
-	data: Buffer;
+	family = 1;
+	sourceNetmask = 0;
+	sourceScope = 0;
+	address = '0.0.0.0';
+	data = DUMMY;
 
-	constructor() {
-		super();
-		this.family = 1;
-		this.sourceNetmask = 0;
-		this.sourceScope = 0;
-		this.address = '0.0.0.0';
-		this.data = DUMMY;
-	}
 
 	get code() {
 		return EOption.SUBNET;
@@ -6090,12 +5600,8 @@ class SUBNETOption extends OptionData {
  */
 
 class EXPIREOption extends OptionData {
-	expire: number;
+	expire = 0;
 
-	constructor() {
-		super();
-		this.expire = 0;
-	}
 
 	get code() {
 		return EOption.EXPIRE;
@@ -6123,12 +5629,8 @@ class EXPIREOption extends OptionData {
  */
 
 class COOKIEOption extends OptionData {
-	cookie: Buffer;
+	cookie = DUMMY;
 
-	constructor() {
-		super();
-		this.cookie = DUMMY;
-	}
 
 	get code() {
 		return EOption.COOKIE;
@@ -6156,14 +5658,9 @@ class COOKIEOption extends OptionData {
  */
 
 class TCPKEEPALIVEOption extends OptionData {
-	length: number;
-	timeout: number;
+	length = 0;
+	timeout = 0;
 
-	constructor() {
-		super();
-		this.length = 0;
-		this.timeout = 0;
-	}
 
 	get code() {
 		return EOption.TCPKEEPALIVE;
@@ -6193,12 +5690,8 @@ class TCPKEEPALIVEOption extends OptionData {
  */
 
 class PADDINGOption extends OptionData {
-	padding: Buffer;
+	padding = DUMMY;
 
-	constructor() {
-		super();
-		this.padding = DUMMY;
-	}
 
 	get code() {
 		return EOption.PADDING;
@@ -6226,12 +5719,8 @@ class PADDINGOption extends OptionData {
  */
 
 class CHAINOption extends OptionData {
-	trustPoint: string;
+	trustPoint = ".";
 
-	constructor() {
-		super();
-		this.trustPoint = '.';
-	}
 
 	get code() {
 		return EOption.CHAIN;
@@ -6265,12 +5754,8 @@ class CHAINOption extends OptionData {
  */
 
 class KEYTAGOption extends OptionData {
-	private tags: number[];
+	private tags: number[] = [];
 
-	constructor() {
-		super();
-		this.tags = [];
-	}
 
 	get code() {
 		return EOption.KEYTAG;
@@ -6300,12 +5785,8 @@ class KEYTAGOption extends OptionData {
  */
 
 class LOCALOption extends OptionData {
-	data: Buffer;
+	data = DUMMY;
 
-	constructor() {
-		super();
-		this.data = DUMMY;
-	}
 
 	get code() {
 		return EOption.LOCAL;
@@ -6333,18 +5814,11 @@ class LOCALOption extends OptionData {
  */
 
 class AP extends Struct {
-	family: number;
-	prefix: number;
-	n: number;
-	afd: Buffer;
+	family = 1;
+	prefix = 0;
+	n = 0;
+	afd = DUMMY4;
 
-	constructor() {
-		super();
-		this.family = 1;
-		this.prefix = 0;
-		this.n = 0;
-		this.afd = DUMMY4;
-	}
 
 	getSize() {
 		return 4 + this.afd.length;

@@ -6,52 +6,55 @@
 
 'use strict';
 
-import * as assert from "assert";
 import {MAX_EDNS_SIZE} from "../constants";
-import DNSResolver from "./dns";
+import DNSResolver, {IDNSResolverOptions} from "./dns";
 import * as encoding from "../encoding";
 import Hosts from "../hosts";
 import ResolvConf from "../resolvconf";
 import * as util from "../util";
 import {Code, Message, Opcode, Question, RecordType} from "../wire";
 
+export interface IStubResolverOptions extends IDNSResolverOptions {
+	rd?: boolean;
+	hosts?: Hosts;
+	conf?: ResolvConf;
+}
+
 /**
  * StubResolver
  * @extends DNSResolver
  */
 
-class StubResolver extends DNSResolver {
-	conf: ResolvConf;
-	hosts: Hosts;
+export default class StubResolver extends DNSResolver {
+	conf = new ResolvConf();
+	hosts = new Hosts();
 
-	constructor(options) {
+	constructor(options?: IStubResolverOptions) {
 		super(options);
 
 		this.rd = true;
-		this.conf = new ResolvConf();
-		this.hosts = new Hosts();
 
 		this.initOptions(options);
 	}
 
-	initOptions(options) {
+	initOptions(options?: IStubResolverOptions) {
 		if (options == null)
 			return this;
 
 		this.parseOptions(options);
 
 		if (options.conf != null) {
-			assert(options.conf instanceof ResolvConf);
+			// assert(options.conf instanceof ResolvConf);
 			this.conf = options.conf;
 		}
 
 		if (options.hosts != null) {
-			assert(options.hosts instanceof Hosts);
+			// assert(options.hosts instanceof Hosts);
 			this.hosts = options.hosts;
 		}
 
 		if (options.rd != null) {
-			assert(typeof options.rd === 'boolean');
+			// assert(typeof options.rd === 'boolean');
 			this.rd = options.rd;
 		}
 
@@ -118,9 +121,3 @@ class StubResolver extends DNSResolver {
 		return this.lookup(name, RecordType.PTR);
 	}
 }
-
-/*
- * Expose
- */
-
-export default StubResolver;

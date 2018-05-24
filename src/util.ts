@@ -475,7 +475,7 @@ export function trimSuffix(s: string, suf: string) {
 	return s;
 }
 
-export function isRRSet(rrset: any[]) {
+export function isRRSet(rrset: Record[]) {
 	assert(Array.isArray(rrset));
 
 	if (rrset.length === 0)

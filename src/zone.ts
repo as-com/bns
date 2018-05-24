@@ -31,18 +31,13 @@ let hints = null;
  */
 
 class Zone {
-	origin: string;
-	count: number;
-	names: Map<string, RecordMap>;
-	wild: RecordMap;
-	nsec: NameList;
+	origin = ".";
+	count = 0;
+	names = new Map<string, RecordMap>();
+	wild = new RecordMap();
+	nsec = new NameList();
 
 	constructor(origin?) {
-		this.origin = '.';
-		this.count = 0;
-		this.names = new Map();
-		this.wild = new RecordMap();
-		this.nsec = new NameList();
 		this.setOrigin(origin);
 	}
 

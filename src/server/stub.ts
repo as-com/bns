@@ -6,18 +6,21 @@
 
 'use strict';
 
-import DNSServer from "./dns";
-import StubResolver from "../resolver/stub";
+import DNSServer, {IDNSServerOptions} from "./dns";
+import StubResolver, {IStubResolverOptions} from "../resolver/stub";
 import Hosts from "../hosts";
 import ResolvConf from "../resolvconf";
+
+export interface IStubServerOptions extends IDNSServerOptions, IStubResolverOptions {
+
+}
 
 /**
  * StubServer
  * @extends EventEmitter
  */
-
-class StubServer extends DNSServer<StubResolver> {
-	constructor(options) {
+export default class StubServer extends DNSServer<StubResolver> {
+	constructor(options?: IStubServerOptions) {
 		super(options);
 		this.resolver = new StubResolver(options);
 		this.resolver.on('log', (...args) => this.emit('log', ...args));
@@ -51,9 +54,3 @@ class StubServer extends DNSServer<StubResolver> {
 		this.resolver.hosts = value;
 	}
 }
-
-/*
- * Expose
- */
-
-export default StubServer;

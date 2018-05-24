@@ -32,19 +32,15 @@ export interface IRecursiveResolverOptions extends IDNSResolverOptions {
  * RecursiveResolver
  * @extends DNSResolver
  */
-
-class RecursiveResolver extends DNSResolver {
-	cache: Cache;
-	hints: Hints;
-	maxReferrals: number;
+export default class RecursiveResolver extends DNSResolver {
+	cache = new Cache();
+	hints = new Hints();
+	maxReferrals = 30;
 
 	constructor(options?: IRecursiveResolverOptions) {
 		super(options);
 
 		this.rd = false;
-		this.cache = new Cache();
-		this.hints = new Hints();
-		this.maxReferrals = 30;
 
 		this.initOptions(options);
 	}
@@ -725,9 +721,3 @@ function isAlias(answer, qs) {
 
 	return ['', null];
 }
-
-/*
- * Expose
- */
-
-export default RecursiveResolver;

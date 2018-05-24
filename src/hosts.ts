@@ -17,14 +17,12 @@ import * as util from "./util";
 /**
  * Hosts
  */
-
-class Hosts {
-	map: Map<string, HostEntry>;
-	rev: Map<string, string>;
+export default class Hosts {
+	map = new Map<string, HostEntry>();
+	rev = new Map<string, string>();
 
 	constructor() {
-		this.map = new Map();
-		this.rev = new Map();
+
 	}
 
 	inject(hosts: Hosts) {
@@ -76,7 +74,7 @@ class Hosts {
 		return out;
 	}
 
-	setHosts(hosts) {
+	setHosts(hosts: string[][]) {
 		assert(Array.isArray(hosts));
 
 		this.clearHosts();
@@ -158,7 +156,7 @@ class Hosts {
 		return this;
 	}
 
-	lookup(name) {
+	lookup(name: string) {
 		const key = name.toLowerCase();
 		const ptr = this.rev.get(key);
 
@@ -242,8 +240,8 @@ class Hosts {
 		return out;
 	}
 
-	fromString(text) {
-		assert(typeof text === 'string');
+	fromString(text: string) {
+		// assert(typeof text === 'string');
 
 		text = text.toLowerCase();
 
@@ -276,17 +274,17 @@ class Hosts {
 		return this;
 	}
 
-	static fromString(text) {
+	static fromString(text: string) {
 		return new this().fromString(text);
 	}
 
-	fromFile(file) {
-		assert(typeof file === 'string');
+	fromFile(file: string) {
+		// assert(typeof file === 'string');
 		const text = fs.readFileSync(file, 'utf8');
 		return this.fromString(text);
 	}
 
-	static fromFile(file) {
+	static fromFile(file: string) {
 		return new this().fromFile(file);
 	}
 
@@ -303,13 +301,13 @@ class Hosts {
 		return new this().fromSystem();
 	}
 
-	async fromFileAsync(file) {
-		assert(typeof file === 'string');
+	async fromFileAsync(file: string) {
+		// assert(typeof file === 'string');
 		const text = await fs.readFile(file, 'utf8');
 		return this.fromString(text);
 	}
 
-	static fromFileAsync(file) {
+	static fromFileAsync(file: string) {
 		return new this().fromFileAsync(file);
 	}
 
@@ -332,18 +330,14 @@ class Hosts {
  */
 
 export class HostEntry {
-	name: string;
-	inet4: string;
-	inet6: string;
-	hostname: string;
-	local: boolean;
+	name = "localhost";
+	inet4: string | null = null;
+	inet6: string | null = null;
+	hostname: string | null = null;
+	local = true;
 
 	constructor() {
-		this.name = 'localhost';
-		this.inet4 = null;
-		this.inet6 = null;
-		this.hostname = null;
-		this.local = true;
+
 	}
 
 	inject(entry: HostEntry) {
@@ -387,13 +381,7 @@ export class HostEntry {
  * Helpers
  */
 
-function stripComments(str) {
-	assert(typeof str === 'string');
+function stripComments(str: string) {
+	// assert(typeof str === 'string');
 	return str.replace(/[ \t\v]*#.*$/g, '');
 }
-
-/*
- * Expose
- */
-
-export default Hosts;

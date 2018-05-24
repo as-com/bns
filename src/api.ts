@@ -34,52 +34,57 @@ let conf = null;
  * API
  */
 
-class API extends EventEmitter {
+export default class API extends EventEmitter {
 	_create: Function;
 	_options: any;
-	_resolvers: Set<any>;
-	_servers: string[];
+	_resolvers = new Set<any>();
+	_servers: string[] | null = null;
 	_onError: (err) => boolean;
 	_onLog: (...args) => boolean;
-	_allowInsecure: boolean;
+	_allowInsecure = false;
 
 	Resolver: (options) => API;
-	V4MAPPED: number;
-	ADDRCONFIG: number;
-	NODATA: string;
-	FORMERR: string;
-	CONNREFUSED: string;
-	SERVFAIL: string;
-	NOTFOUND: string;
-	NOTIMP: string;
-	REFUSED: string;
-	BADQUERY: string;
-	BADNAME: string;
-	BADFAMILY: string;
-	BADRESP: string;
-	TIMEOUT: string;
-	EOF: string;
-	FILE: string;
-	NOMEM: string;
-	DESTRUCTION: string;
-	BADSTR: string;
-	BADFLAGS: string;
-	NONAME: string;
-	BADHINTS: string;
-	NOTINITIALIZED: string;
-	LOADIPHLPAPI: string;
-	ADDRGETNETWORKPARAMS: string;
-	CANCELLED: string;
-	INSECURE: string;
-	BADSIGNATURE: string;
-	NORESFLAG: string;
-	BADQUESTION: string;
-	BADTRUNCATION: string;
-	BADOPCODE: string;
-	LAMESERVER: string;
-	NOAUTHORITY: string;
-	ALIASLOOP: string;
-	MAXREFERRALS: string;
+
+	V4MAPPED = 8;
+	ADDRCONFIG = 32;
+
+	NODATA = 'ENODATA';
+	FORMERR = 'EFORMERR';
+	SERVFAIL = 'ESERVFAIL';
+	NOTFOUND = 'ENOTFOUND';
+	NOTIMP = 'ENOTIMP';
+	REFUSED = 'EREFUSED';
+	BADQUERY = 'EBADQUERY';
+	BADNAME = 'EBADNAME';
+	BADFAMILY = 'EBADFAMILY';
+	BADRESP = 'EBADRESP';
+	CONNREFUSED = 'ECONNREFUSED';
+	TIMEOUT = 'ETIMEOUT';
+	EOF = 'EOF';
+	FILE = 'EFILE';
+	NOMEM = 'ENOMEM';
+	DESTRUCTION = 'EDESTRUCTION';
+	BADSTR = 'EBADSTR';
+	BADFLAGS = 'EBADFLAGS';
+	NONAME = 'ENONAME';
+	BADHINTS = 'EBADHINTS';
+	NOTINITIALIZED = 'ENOTINITIALIZED';
+	LOADIPHLPAPI = 'ELOADIPHLPAPI';
+	ADDRGETNETWORKPARAMS = 'EADDRGETNETWORKPARAMS';
+	CANCELLED = 'ECANCELLED';
+
+	// Custom
+	INSECURE = 'EINSECURE';
+	BADSIGNATURE = 'EBADSIGNATURE';
+	NORESFLAG = 'ENORESFLAG';
+	BADQUESTION = 'EBADQUESTION';
+	BADTRUNCATION = 'EBADTRUNCATION';
+	BADOPCODE = 'EBADOPCODE';
+	LAMESERVER = 'ELAMESERVER';
+	NOAUTHORITY = 'ENOAUTHORITY';
+	ALIASLOOP = 'EALIASLOOP';
+	MAXREFERRALS = 'EMAXREFERRALS';
+
 
 	constructor(create: Function, options) {
 		super();
@@ -89,56 +94,14 @@ class API extends EventEmitter {
 		// Private
 		this._create = create;
 		this._options = options;
-		this._resolvers = new Set();
-		this._servers = null;
 		this._onError = err => this.emit('error', err);
 		this._onLog = (...args) => this.emit('log', ...args);
-		this._allowInsecure = false;
 
 		// Public
 		this.Resolver = function Resolver(options) {
 			return new API(create, options);
 		};
 
-		this.V4MAPPED = 8;
-		this.ADDRCONFIG = 32;
-
-		this.NODATA = 'ENODATA';
-		this.FORMERR = 'EFORMERR';
-		this.SERVFAIL = 'ESERVFAIL';
-		this.NOTFOUND = 'ENOTFOUND';
-		this.NOTIMP = 'ENOTIMP';
-		this.REFUSED = 'EREFUSED';
-		this.BADQUERY = 'EBADQUERY';
-		this.BADNAME = 'EBADNAME';
-		this.BADFAMILY = 'EBADFAMILY';
-		this.BADRESP = 'EBADRESP';
-		this.CONNREFUSED = 'ECONNREFUSED';
-		this.TIMEOUT = 'ETIMEOUT';
-		this.EOF = 'EOF';
-		this.FILE = 'EFILE';
-		this.NOMEM = 'ENOMEM';
-		this.DESTRUCTION = 'EDESTRUCTION';
-		this.BADSTR = 'EBADSTR';
-		this.BADFLAGS = 'EBADFLAGS';
-		this.NONAME = 'ENONAME';
-		this.BADHINTS = 'EBADHINTS';
-		this.NOTINITIALIZED = 'ENOTINITIALIZED';
-		this.LOADIPHLPAPI = 'ELOADIPHLPAPI';
-		this.ADDRGETNETWORKPARAMS = 'EADDRGETNETWORKPARAMS';
-		this.CANCELLED = 'ECANCELLED';
-
-		// Custom
-		this.INSECURE = 'EINSECURE';
-		this.BADSIGNATURE = 'EBADSIGNATURE';
-		this.NORESFLAG = 'ENORESFLAG';
-		this.BADQUESTION = 'EBADQUESTION';
-		this.BADTRUNCATION = 'EBADTRUNCATION';
-		this.BADOPCODE = 'EBADOPCODE';
-		this.LAMESERVER = 'ELAMESERVER';
-		this.NOAUTHORITY = 'ENOAUTHORITY';
-		this.ALIASLOOP = 'EALIASLOOP';
-		this.MAXREFERRALS = 'EMAXREFERRALS';
 
 		// Swallow errors
 		this.on('error', () => {
@@ -889,9 +852,3 @@ function makeTypeError(code, arg) {
 	err.name = `TypeError [${code}]`;
 	return err;
 }
-
-/*
- * Expose
- */
-
-export default API;

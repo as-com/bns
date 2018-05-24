@@ -88,8 +88,8 @@ export function createDS(dnskey: Record<DNSKEYRecord>, digestType: HashAlg) {
 	return rr;
 }
 
-export function signMessage(msg, name, key, priv, lifespan) {
-	assert(msg instanceof Message);
+export function signMessage(msg: Message, name: string, key: Record<DNSKEYRecord>, priv: Buffer, lifespan?: number) {
+	// assert(msg instanceof Message);
 
 	for (const section of msg.sections()) {
 		const sigs = signSection(section, name, key, priv, lifespan);
@@ -100,10 +100,10 @@ export function signMessage(msg, name, key, priv, lifespan) {
 	return msg;
 }
 
-export function signSection(section, name, key, priv, lifespan) {
-	assert(Array.isArray(section));
+export function signSection(section: Record[], name: string, key: Record<DNSKEYRecord>, priv: Buffer, lifespan?: number) {
+	// assert(Array.isArray(section));
 
-	const set = new Set();
+	const set = new Set<RecordType>();
 	const sigs = [];
 
 	for (const rr of section)
@@ -144,16 +144,16 @@ export function signType(section, type, key, priv, lifespan) {
 	return section;
 }
 
-export function rrsign(key, priv, rrset, lifespan) {
+export function rrsign(key: Record<DNSKEYRecord>, priv: Buffer, rrset: Record[], lifespan?: number) {
 	if (lifespan == null)
 		lifespan = 14 * 24 * 60 * 60;
 
-	assert(key instanceof Record);
+	// assert(key instanceof Record);
 	assert(key.type === RecordType.DNSKEY);
-	assert(Array.isArray(rrset));
+	// assert(Array.isArray(rrset));
 	assert((lifespan >>> 0) === lifespan);
 
-	const sig = new Record();
+	const sig = new Record<RRSIGRecord>();
 	const s = new RRSIGRecord();
 
 	sig.name = key.name;
@@ -171,11 +171,11 @@ export function rrsign(key, priv, rrset, lifespan) {
 	return sign(sig, priv, rrset);
 }
 
-export function sign(sig, priv, rrset) {
-	assert(sig instanceof Record);
+export function sign(sig: Record<RRSIGRecord>, priv: Buffer, rrset: Record[]) {
+	// assert(sig instanceof Record);
 	assert(sig.type === RecordType.RRSIG);
-	assert(Buffer.isBuffer(priv));
-	assert(Array.isArray(rrset));
+	// assert(Buffer.isBuffer(priv));
+	// assert(Array.isArray(rrset));
 
 	const s = sig.data; // RRSIG
 

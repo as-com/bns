@@ -31,36 +31,27 @@ export interface IDNSResolverOptions extends IClientOptions {
  * @extends EventEmitter
  */
 
-class DNSResolver extends EventEmitter {
+export default class DNSResolver extends EventEmitter {
 	socket: Client;
-	pending: Map<number, Query>;
-	timer: Timer;
+	pending = new Map<number, Query>();
+	timer: Timer | null = null;
 	inet6: boolean;
 	tcp: boolean;
-	forceTCP: boolean;
-	maxAttempts: number;
-	maxTimeout: number;
-	rd: boolean;
-	edns: boolean;
-	ednsSize: number;
-	dnssec: boolean;
+	forceTCP = false;
+	maxAttempts = 3;
+	maxTimeout = 2000;
+	rd = false;
+	edns = false;
+	ednsSize = MAX_EDNS_SIZE;
+	dnssec = false;
 
 	constructor(options?: IDNSResolverOptions) {
 		super();
 
 		this.socket = new Client(options);
-		this.pending = new Map();
-		this.timer = null;
 
 		this.inet6 = this.socket.inet6;
 		this.tcp = this.socket.tcp;
-		this.forceTCP = false;
-		this.maxAttempts = 3;
-		this.maxTimeout = 2000;
-		this.rd = false;
-		this.edns = false;
-		this.ednsSize = MAX_EDNS_SIZE;
-		this.dnssec = false;
 
 		this.init();
 	}
@@ -94,7 +85,7 @@ class DNSResolver extends EventEmitter {
 		if (options == null)
 			return this;
 
-		assert(options && typeof options === 'object');
+		// assert(options && typeof options === 'object');
 
 		if (options.forceTCP != null) {
 			// assert(typeof options.forceTCP === 'boolean');
@@ -628,9 +619,3 @@ function isLame(req, res) {
 
 function noop() {
 }
-
-/*
- * Expose
- */
-
-export default DNSResolver;

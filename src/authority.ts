@@ -9,36 +9,34 @@
 
 'use strict';
 
-import * as assert from "assert";
 import {IServer} from "./server";
 
 /**
  * Authority
  */
-
-class Authority {
+export default class Authority {
 	zone: string;
 	name: string;
 	servers: IServer[];
 
 	constructor(zone?: string, name?: string) {
-		assert(zone == null || typeof zone === 'string');
-		assert(name == null || typeof name === 'string');
+		// assert(zone == null || typeof zone === 'string');
+		// assert(name == null || typeof name === 'string');
 
 		this.zone = zone || '.';
 		this.name = name || '.';
 		this.servers = [];
 	}
 
-	add(host, port) {
-		assert(typeof host === 'string');
-		assert((port & 0xffff) === port);
+	add(host: string, port: number) {
+		// assert(typeof host === 'string');
+		// assert((port & 0xffff) === port);
 		this.servers.push({host, port});
 		return this;
 	}
 
-	inject(auth) {
-		assert(auth instanceof Authority);
+	inject(auth: Authority) {
+		// assert(auth instanceof Authority);
 		this.zone = auth.zone;
 		this.name = auth.name;
 		this.servers = auth.servers.slice();
@@ -50,9 +48,3 @@ class Authority {
 		return copy.inject(this);
 	}
 }
-
-/*
- * Expose
- */
-
-export default Authority;

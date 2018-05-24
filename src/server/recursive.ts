@@ -6,18 +6,21 @@
 
 'use strict';
 
-import DNSServer from "./dns";
+import DNSServer, {IDNSServerOptions} from "./dns";
 import Cache from "../cache"
-import RecursiveResolver from "../resolver/recursive";
+import RecursiveResolver, {IRecursiveResolverOptions} from "../resolver/recursive";
 import Hints from "../hints";
+
+export interface IRecursiveServerOptions extends IRecursiveResolverOptions, IDNSServerOptions {
+
+}
 
 /**
  * RecursiveServer
  * @extends EventEmitter
  */
-
-class RecursiveServer extends DNSServer<RecursiveResolver> {
-	constructor(options) {
+export default class RecursiveServer extends DNSServer<RecursiveResolver> {
+	constructor(options?: IRecursiveServerOptions) {
 		super(options);
 		this.resolver = new RecursiveResolver(options);
 		this.resolver.on('log', (...args) => this.emit('log', ...args));
@@ -42,9 +45,3 @@ class RecursiveServer extends DNSServer<RecursiveResolver> {
 		this.resolver.hints = value;
 	}
 }
-
-/*
- * Expose
- */
-
-export default RecursiveServer;

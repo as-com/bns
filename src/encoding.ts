@@ -15,7 +15,7 @@
 
 import * as assert from "assert";
 import * as IP from "binet";
-import {EncodingError} from "@as-com/bufio";
+import {BufferReader, EncodingError} from "@as-com/bufio";
 
 import {MAX_LABEL_SIZE, MAX_NAME_SIZE} from "./constants";
 
@@ -60,21 +60,15 @@ export function sizeName(name, map, cmp?) {
 	return off;
 }
 
-export function writeName(data, name, off, map, cmp) {
-	if (data == null)
-		data = null;
-
-	if (map == null)
-		map = null;
-
+export function writeName(data: Buffer | null = null, name: string, off: number, map: Map<string, number> | null = null, cmp: boolean | null): [number, number] {
 	if (cmp == null)
 		cmp = map != null;
 
-	assert(data === null || Buffer.isBuffer(data));
-	assert(typeof name === 'string');
+	// assert(data === null || Buffer.isBuffer(data));
+	// assert(typeof name === 'string');
 	assert((off >>> 0) === off);
-	assert(map === null || (map instanceof Map));
-	assert(typeof cmp === 'boolean');
+	// assert(map === null || (map instanceof Map));
+	// assert(typeof cmp === 'boolean');
 
 	let nl = name.length;
 
@@ -201,7 +195,7 @@ export function writeName(data, name, off, map, cmp) {
 	return [off, labels];
 }
 
-export function readName(data, off): [number, string] {
+export function readName(data: Buffer, off: number): [number, string] {
 	assert(Buffer.isBuffer(data));
 	assert((off >>> 0) === off);
 
@@ -312,7 +306,7 @@ export function readName(data, off): [number, string] {
 	return [res, name];
 }
 
-export function writeNameBW(bw, name, map?, cmp?) {
+export function writeNameBW(bw, name: string, map?: Map<string, number> | null, cmp?: boolean | null) {
 	assert(bw);
 	const {data, offset} = bw;
 	const [off, labels] =
@@ -321,27 +315,27 @@ export function writeNameBW(bw, name, map?, cmp?) {
 	return labels;
 }
 
-export function readNameBR(br) {
+export function readNameBR(br: BufferReader) {
 	assert(br);
 	const [off, name] = readName(br.data, br.offset);
 	br.offset = off;
 	return name;
 }
 
-export function packName(name) {
+export function packName(name: string) {
 	const size = sizeName(name, null, false);
 	const data = Buffer.allocUnsafe(size);
 	writeName(data, name, 0, null, false);
 	return data;
 }
 
-export function unpackName(data) {
+export function unpackName(data: Buffer) {
 	const [, name] = readName(data, 0);
 	return name;
 }
 
-export function isName(name) {
-	assert(typeof name === 'string');
+export function isName(name: string) {
+	// assert(typeof name === 'string');
 
 	let nl = name.length;
 
@@ -450,11 +444,11 @@ export function isName(name) {
 	return true;
 }
 
-export function toName(name, enc) {
+export function toName(name: string | Buffer, enc: string | null = "utf8") {
 	if (enc == null)
 		enc = 'utf8';
 
-	assert(typeof enc === 'string');
+	// assert(typeof enc === 'string');
 
 	if (Buffer.isBuffer(name)) {
 		if (name.length + 1 > MAX_NAME_SIZE)
@@ -464,7 +458,7 @@ export function toName(name, enc) {
 		enc = 'hex';
 	}
 
-	assert(typeof name === 'string');
+	// assert(typeof name === 'string');
 
 	let str = _escapeString(name, false, enc);
 
@@ -482,24 +476,21 @@ export function toName(name, enc) {
 	return readName(data, 0)[1];
 }
 
-export function fromName(name, enc) {
+export function fromName(name: string, enc: string | null = "utf8") {
 	if (enc == null)
 		enc = 'utf8';
 
 	assert(isName(name));
-	assert(typeof enc === 'string');
+	// assert(typeof enc === 'string');
 
 	return _unescapeString(name, false, enc);
 }
 
-export function sizeRawString(str) {
+export function sizeRawString(str: string) {
 	return writeRawString(null, str, 0);
 }
 
-export function writeRawString(data, str, off) {
-	if (data == null)
-		data = null;
-
+export function writeRawString(data: Buffer | null = null, str: string, off: number) {
 	assert(data === null || Buffer.isBuffer(data));
 	assert(typeof str === 'string');
 	assert((off >>> 0) === off);
@@ -544,14 +535,14 @@ export function writeRawString(data, str, off) {
 	return off;
 }
 
-export function readRawString(data, off, len, nsp) {
+export function readRawString(data: Buffer, off: number, len: number, nsp: boolean | null = false): [number, string] {
 	if (nsp == null)
 		nsp = false;
 
-	assert(Buffer.isBuffer(data));
+	// assert(Buffer.isBuffer(data));
 	assert((off >>> 0) === off);
 	assert((len >>> 0) === len);
-	assert(typeof nsp === 'boolean');
+	// assert(typeof nsp === 'boolean');
 
 	if (len > MAX_NAME_SIZE)
 		throw new EncodingError(off, 'Maximum string size exceeded');
@@ -587,14 +578,14 @@ export function readRawString(data, off, len, nsp) {
 	return [end, str];
 }
 
-export function packRawString(str) {
+export function packRawString(str: string) {
 	const size = sizeRawString(str);
 	const data = Buffer.allocUnsafe(size);
 	writeRawString(data, str, 0);
 	return data;
 }
 
-export function unpackRawString(data, nsp) {
+export function unpackRawString(data: Buffer, nsp?: boolean) {
 	assert(data);
 	const [, str] = readRawString(data, 0, data.length, nsp);
 	return str;
@@ -607,23 +598,23 @@ export function writeRawStringBW(bw, str) {
 	return bw;
 }
 
-export function readRawStringBR(br, len, nsp?) {
+export function readRawStringBR(br: BufferReader, len: number, nsp?: boolean) {
 	assert(br);
 	const [off, str] = readRawString(br.data, br.offset, len, nsp);
-	br.offset = off;
+	br.offset = off as any; // TODO
 	return str;
 }
 
-export function sizeString(str) {
+export function sizeString(str: string) {
 	return writeString(null, str, 0);
 }
 
-export function writeString(data, str, off) {
+export function writeString(data: Buffer | null = null, str: string, off: number) {
 	if (data == null)
 		data = null;
 
-	assert(data === null || Buffer.isBuffer(data));
-	assert(typeof str === 'string');
+	// assert(data === null || Buffer.isBuffer(data));
+	// assert(typeof str === 'string');
 	assert((off >>> 0) === off);
 
 	const start = off;
@@ -647,8 +638,8 @@ export function writeString(data, str, off) {
 	return off;
 }
 
-export function readString(data, off, nsp) {
-	assert(Buffer.isBuffer(data));
+export function readString(data: Buffer, off: number, nsp?: boolean) {
+	// assert(Buffer.isBuffer(data));
 	assert((off >>> 0) === off);
 
 	if (off + 1 > data.length)
@@ -661,24 +652,24 @@ export function readString(data, off, nsp) {
 	return readRawString(data, off, len, nsp);
 }
 
-export function packString(str) {
+export function packString(str: string) {
 	const size = sizeString(str);
 	const data = Buffer.allocUnsafe(size);
 	writeString(data, str, 0);
 	return data;
 }
 
-export function unpackString(data, nsp) {
+export function unpackString(data: Buffer, nsp?: boolean) {
 	const [, str] = readString(data, 0, nsp);
 	return str;
 }
 
-export function isString(str, nsp) {
+export function isString(str: string, nsp?: boolean) {
 	if (nsp == null)
 		nsp = false;
 
-	assert(typeof str === 'string');
-	assert(typeof nsp === 'boolean');
+	// assert(typeof str === 'string');
+	// assert(typeof nsp === 'boolean');
 
 	let sl = str.length;
 
@@ -742,14 +733,14 @@ export function isString(str, nsp) {
 	return true;
 }
 
-export function _escapeString(str, nsp, enc) {
+export function _escapeString(str: string, nsp: boolean = false, enc: string = "utf8") {
 	if (nsp == null)
 		nsp = false;
 
 	if (enc == null)
 		enc = 'utf8';
 
-	assert(typeof nsp === 'boolean');
+	// assert(typeof nsp === 'boolean');
 
 	let buf, len;
 
@@ -760,8 +751,8 @@ export function _escapeString(str, nsp, enc) {
 		if (len > MAX_NAME_SIZE)
 			throw new EncodingError(0, 'String too large');
 	} else {
-		assert(typeof str === 'string');
-		assert(typeof enc === 'string');
+		// assert(typeof str === 'string');
+		// assert(typeof enc === 'string');
 
 		buf = POOL2;
 		len = buf.write(str, enc);
@@ -773,19 +764,19 @@ export function _escapeString(str, nsp, enc) {
 	return readRawString(buf, 0, len, nsp)[1];
 }
 
-export function toString(str, nsp, enc) {
+export function toString(str: string, nsp?: boolean, enc?: string) {
 	return _escapeString(str, nsp, enc);
 }
 
-export function _unescapeString(str, nsp, enc) {
+export function _unescapeString(str: string, nsp: boolean = false, enc: string = "utf8") {
 	if (nsp == null)
 		nsp = false;
 
 	if (enc == null)
 		enc = 'utf8';
 
-	assert(typeof str === 'string');
-	assert(typeof enc === 'string');
+	// assert(typeof str === 'string');
+	// assert(typeof enc === 'string');
 
 	const buf = POOL2;
 	const len = writeRawString(buf, str, 0);
@@ -796,30 +787,30 @@ export function _unescapeString(str, nsp, enc) {
 	return buf.toString(enc, 0, len);
 }
 
-export function fromString(str, nsp, enc) {
+export function fromString(str: string, nsp?: boolean, enc?: string) {
 	assert(isString(str, nsp));
 	return _unescapeString(str, nsp, enc);
 }
 
-export function writeStringBW(bw, str) {
+export function writeStringBW(bw, str: string) {
 	assert(bw && typeof bw === 'object');
 	const {data, offset} = bw;
 	bw.offset = writeString(data, str, offset);
 	return bw;
 }
 
-export function readStringBR(br, nsp?) {
+export function readStringBR(br, nsp?: boolean) {
 	assert(br && typeof br === 'object');
 	const [off, str] = readString(br.data, br.offset, nsp);
 	br.offset = off;
 	return str;
 }
 
-export function writeIP(bw, str, size) {
+export function writeIP(bw, str: string, size: number) {
 	return IP.writeBW(bw, str, size);
 }
 
-export function readIP(br, size) {
+export function readIP(br, size: number) {
 	return IP.readBR(br, size);
 }
 
@@ -850,7 +841,7 @@ export function reverse(addr: string) {
 	return `${name}ip6.arpa.`;
 }
 
-export function toBitmap(types) {
+export function toBitmap(types: number[]) {
 	assert(Array.isArray(types));
 
 	if (types.length === 0)
@@ -908,8 +899,8 @@ export function toBitmap(types) {
 	return map.slice(0, off);
 }
 
-export function fromBitmap(map) {
-	assert(Buffer.isBuffer(map));
+export function fromBitmap(map: Buffer) {
+	// assert(Buffer.isBuffer(map));
 
 	const types = [];
 
@@ -949,8 +940,8 @@ export function fromBitmap(map) {
 	return types;
 }
 
-export function hasType(map, type) {
-	assert(Buffer.isBuffer(map));
+export function hasType(map: Buffer, type: number) {
+	// assert(Buffer.isBuffer(map));
 	assert((type & 0xffff) === type);
 
 	let i = 0;
@@ -995,8 +986,8 @@ export function hasType(map, type) {
 	return false;
 }
 
-export function toPortmap(ports) {
-	assert(Array.isArray(ports));
+export function toPortmap(ports: number[]) {
+	// assert(Array.isArray(ports));
 
 	if (ports.length === 0)
 		return DUMMY;
@@ -1023,8 +1014,8 @@ export function toPortmap(ports) {
 	return map;
 }
 
-export function fromPortmap(map) {
-	assert(Buffer.isBuffer(map));
+export function fromPortmap(map: Buffer) {
+	// assert(Buffer.isBuffer(map));
 
 	const ports = [];
 
@@ -1045,8 +1036,8 @@ export function fromPortmap(map) {
 	return ports;
 }
 
-export function hasPort(map, port) {
-	assert(Buffer.isBuffer(map));
+export function hasPort(map: Buffer, port: number) {
+	// assert(Buffer.isBuffer(map));
 	assert((port & 0xffff) === port);
 
 	const oct = port >>> 3;
@@ -1068,12 +1059,12 @@ export function hasPort(map, port) {
  * Helpers
  */
 
-function isDigit(num) {
+function isDigit(num: number) {
 	return num >= 0x30 && num <= 0x39;
 }
 
-function isDigits(buf, off, len) {
-	assert(Buffer.isBuffer(buf));
+function isDigits(buf: Buffer, off: number, len: number) {
+	// assert(Buffer.isBuffer(buf));
 	assert((off >>> 0) === off);
 	assert((len >>> 0) === len);
 	assert(len <= buf.length);
@@ -1093,8 +1084,8 @@ function isDigits(buf, off, len) {
 	return true;
 }
 
-function toByte(buf, off) {
-	assert(Buffer.isBuffer(buf));
+function toByte(buf: Buffer, off: number) {
+	// assert(Buffer.isBuffer(buf));
 	assert((off >>> 0) === off);
 	assert(off + 3 <= buf.length);
 
@@ -1105,7 +1096,7 @@ function toByte(buf, off) {
 	return hi + md + lo;
 }
 
-function toDDD(ch) {
+function toDDD(ch: number) {
 	assert((ch & 0xff) === ch);
 
 	const str = ch.toString(10);

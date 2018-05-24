@@ -11,43 +11,44 @@ import * as EventEmitter from "events";
 import {Code, EOption, MAX_EDNS_SIZE, MAX_MSG_SIZE, MAX_UDP_SIZE, RecordType} from "../constants";
 import * as dnssec from "../dnssec";
 import DNSError from "../error";
-import {Server} from "../net";
+import {IServerOptions, Server} from "../net";
 
 import {Message} from "../wire";
 import DNSResolver from "../resolver/dns";
 
 
+export interface IDNSServerOptions extends IServerOptions {
+	noAny?: boolean;
+	dnssec?: boolean;
+	ednsSize?: number;
+	edns?: boolean;
+	maxConnections?: number;
+
+}
+
 /**
  * DNSServer
  * @extends EventEmitter
  */
-
-class DNSServer<T extends DNSResolver> extends EventEmitter {
+export default class DNSServer<T extends DNSResolver> extends EventEmitter {
 	server: Server;
-	resolver: T;
-	ra: boolean;
+	resolver: T | null = null;
+	ra = false;
 	inet6: boolean;
 	tcp: boolean;
-	maxConnections: number;
-	edns: boolean;
-	ednsSize: number;
-	dnssec: boolean;
-	noAny: boolean;
+	maxConnections = 20;
+	edns = false;
+	ednsSize = MAX_EDNS_SIZE;
+	dnssec = false;
+	noAny = false;
 
-	constructor(options) {
+	constructor(options?: IDNSServerOptions) {
 		super();
 
 		this.server = new Server(options);
-		this.resolver = null;
-		this.ra = false;
 
 		this.inet6 = this.server.inet6;
 		this.tcp = this.server.tcp;
-		this.maxConnections = 20;
-		this.edns = false;
-		this.ednsSize = MAX_EDNS_SIZE;
-		this.dnssec = false;
-		this.noAny = false;
 
 		this.init();
 	}
@@ -77,11 +78,11 @@ class DNSServer<T extends DNSResolver> extends EventEmitter {
 		});
 	}
 
-	parseOptions(options) {
+	parseOptions(options?: IDNSServerOptions) {
 		if (options == null)
 			return this;
 
-		assert(options && typeof options === 'object');
+		// assert(options && typeof options === 'object');
 
 		if (options.maxConnections != null) {
 			assert((options.maxConnections >>> 0) === options.maxConnections);
@@ -89,7 +90,7 @@ class DNSServer<T extends DNSResolver> extends EventEmitter {
 		}
 
 		if (options.edns != null) {
-			assert(typeof options.edns === 'boolean');
+			// assert(typeof options.edns === 'boolean');
 			this.edns = options.edns;
 		}
 
@@ -101,21 +102,21 @@ class DNSServer<T extends DNSResolver> extends EventEmitter {
 		}
 
 		if (options.dnssec != null) {
-			assert(typeof options.dnssec === 'boolean');
+			// assert(typeof options.dnssec === 'boolean');
 			this.dnssec = options.dnssec;
 			if (this.dnssec)
 				this.edns = true;
 		}
 
 		if (options.noAny != null) {
-			assert(typeof options.noAny === 'boolean');
+			// assert(typeof options.noAny === 'boolean');
 			this.noAny = options.noAny;
 		}
 
 		return this;
 	}
 
-	initOptions(options) {
+	initOptions(options?: IDNSServerOptions) {
 		return this.parseOptions(options);
 	}
 
@@ -369,9 +370,3 @@ class Response extends Message {
 		this._server.send(this._req, this, this._rinfo);
 	}
 }
-
-/*
- * Expose
- */
-
-export default DNSServer;

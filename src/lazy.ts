@@ -14,7 +14,7 @@ let schema = null;
  * Lazy Require
  */
 
-function lazy(_require: typeof require, name: string) {
+export default function lazy(_require: typeof require, name: string) {
 	// assert(typeof name === 'string');
 
 	switch (name) {
@@ -35,8 +35,3 @@ function lazy(_require: typeof require, name: string) {
 	throw new Error(`Unknown module: ${name}.`);
 }
 
-/*
- * Expose
- */
-
-export default lazy;

@@ -34,8 +34,8 @@ export function select(cert: Buffer, selector: number) {
 	return null;
 }
 
-export function hash(data, matchingType) {
-	assert(Buffer.isBuffer(data));
+export function hash(data: Buffer, matchingType: DaneMatchingType) {
+	// assert(Buffer.isBuffer(data));
 	assert((matchingType & 0xff) === matchingType);
 
 	switch (matchingType) {
@@ -50,7 +50,7 @@ export function hash(data, matchingType) {
 	return null;
 }
 
-export function sign(cert: Buffer, selector: number, matchingType: number) {
+export function sign(cert: Buffer, selector: DaneSelector, matchingType: DaneMatchingType) {
 	const data = select(cert, selector);
 
 	if (!data)
@@ -64,7 +64,7 @@ export function sign(cert: Buffer, selector: number, matchingType: number) {
 	return _hash;
 }
 
-export function verify(cert: Buffer, selector: number, matchingType: number, certificate: Buffer) {
+export function verify(cert: Buffer, selector: DaneSelector, matchingType: DaneMatchingType, certificate: Buffer) {
 	const hash = sign(cert, selector, matchingType);
 
 	if (!hash)
@@ -77,13 +77,13 @@ export function verify(cert: Buffer, selector: number, matchingType: number, cer
  * Helpers
  */
 
-function getCert(data) {
+function getCert(data: Buffer) {
 	const size = gauge(data, 0);
 	assert(size <= data.length);
 	return data.slice(0, size);
 }
 
-function getPubkeyInfo(data) {
+function getPubkeyInfo(data: Buffer) {
 	let off = 0;
 
 	// cert
@@ -118,7 +118,7 @@ function getPubkeyInfo(data) {
 	return data.slice(off, off + size);
 }
 
-function tag(data, off, expect, explicit) {
+function tag(data: Buffer, off, expect, explicit) {
 	assert(off < data.length);
 
 	const start = off;
@@ -175,35 +175,35 @@ function tag(data, off, expect, explicit) {
 	return [off, size];
 }
 
-function read(data, off) {
+function read(data: Buffer, off: number) {
 	// Read seq-header, update offset to after header.
 	return tag(data, off, 0x10, false);
 }
 
-function gauge(data, off) {
+function gauge(data: Buffer, off: number) {
 	// Get total size of seq-header + data.
 	const [pos, size] = read(data, off);
 	return (pos - off) + size;
 }
 
-function seq(data, off) {
+function seq(data: Buffer, off: number) {
 	// Read seq-header, return offset after header.
 	return read(data, off)[0];
 }
 
-function skip(data, off) {
+function skip(data: Buffer, off: number) {
 	// Read seq-header, return offset after header+data.
 	const [offset, size] = read(data, off);
 	return offset + size;
 }
 
-function int(data, off) {
+function int(data: Buffer, off: number) {
 	// Read int-header, return offset after header+data.
 	const [offset, size] = tag(data, off, 0x02, false);
 	return offset + size;
 }
 
-function xint(data, off) {
+function xint(data: Buffer, off: number) {
 	// Read int-header (explicit), return offset after header+data.
 	const [offset, size] = tag(data, off, 0x00, true);
 	return offset + size;

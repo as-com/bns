@@ -6,7 +6,6 @@
 
 'use strict';
 
-import * as assert from "assert";
 import * as fs from "bfile";
 import * as IP from "binet";
 import {DNS_PORT} from "./constants";
@@ -41,49 +40,30 @@ const OPENDNS_NS = [
  * ResolvConf
  */
 
-class ResolvConf {
-	ns4: any[]; // TODO
-	ns6: any[];
-	keys: Map<any, any>;
-	domain: string;
-	search: string[];
-	sortlist: any[];
-	debug: boolean;
-	dots: number;
-	timeout: number;
-	attempts: number;
-	rotate: boolean;
-	checkNames: boolean;
-	inet6: boolean;
-	byteString: boolean;
-	dotInt: boolean;
-	edns: boolean;
-	singleRequest: boolean;
-	singleRequestReopen: boolean;
-	tldQuery: boolean;
-	forceTCP: boolean;
+export default class ResolvConf {
+	ns4: any[] = []; // TODO
+	ns6: any[] = [];
+	keys = new Map<any, any>();
+	domain: string | null = null;
+	search: string[] = [];
+	sortlist: any[] = [];
+	debug = false;
+	dots = 1;
+	timeout = 5000;
+	attempts = 2;
+	rotate = false;
+	checkNames = true;
+	inet6 = false;
+	byteString = false;
+	dotInt = false;
+	edns = false;
+	singleRequest = false;
+	singleRequestReopen = false;
+	tldQuery = true;
+	forceTCP = false;
 
 	constructor() {
-		this.ns4 = [];
-		this.ns6 = [];
-		this.keys = new Map();
-		this.domain = null;
-		this.search = null;
-		this.sortlist = [];
-		this.debug = false;
-		this.dots = 1;
-		this.timeout = 5000;
-		this.attempts = 2;
-		this.rotate = false;
-		this.checkNames = true;
-		this.inet6 = false;
-		this.byteString = false;
-		this.dotInt = false;
-		this.edns = false;
-		this.singleRequest = false;
-		this.singleRequestReopen = false;
-		this.tldQuery = true;
-		this.forceTCP = false;
+
 	}
 
 	inject(conf: ResolvConf) {
@@ -187,8 +167,8 @@ class ResolvConf {
 		return servers;
 	}
 
-	setServers(servers) {
-		assert(Array.isArray(servers));
+	setServers(servers: string[]) {
+		// assert(Array.isArray(servers));
 
 		this.clearServers();
 
@@ -241,8 +221,8 @@ class ResolvConf {
 			this.keys.set(addr.hostname, addr.key);
 	}
 
-	setDomain(domain) {
-		assert(typeof domain === 'string');
+	setDomain(domain: string) {
+		// assert(typeof domain === 'string');
 
 		if (!util.isName(domain))
 			throw new Error('Invalid domain.');
@@ -254,7 +234,7 @@ class ResolvConf {
 	}
 
 	setSearch(list: string) {
-		assert(typeof list === 'string');
+		// assert(typeof list === 'string');
 
 		if (list.length > 256)
 			throw new Error('Search list too large.');
@@ -277,8 +257,8 @@ class ResolvConf {
 		return this;
 	}
 
-	setSort(list) {
-		assert(typeof list === 'string');
+	setSort(list: string) {
+		// assert(typeof list === 'string');
 
 		const pairs = util.splitSP(list);
 
@@ -308,11 +288,11 @@ class ResolvConf {
 		return this;
 	}
 
-	toString(full) {
+	toString(full: boolean = false) {
 		if (full == null)
 			full = false;
 
-		assert(typeof full === 'boolean');
+		// assert(typeof full === 'boolean');
 
 		let out = '';
 
@@ -400,8 +380,8 @@ class ResolvConf {
 		return out;
 	}
 
-	parseServer(text) {
-		assert(typeof text === 'string');
+	parseServer(text: string) {
+		// assert(typeof text === 'string');
 
 		const server = text.trim().toLowerCase();
 
@@ -412,8 +392,8 @@ class ResolvConf {
 		}
 	}
 
-	parseDomain(text) {
-		assert(typeof text === 'string');
+	parseDomain(text: string) {
+		// assert(typeof text === 'string');
 
 		const domain = text.trim().toLowerCase();
 
@@ -424,8 +404,8 @@ class ResolvConf {
 		}
 	}
 
-	parseSearch(text) {
-		assert(typeof text === 'string');
+	parseSearch(text: string) {
+		// assert(typeof text === 'string');
 
 		const list = text.trim().toLowerCase();
 
@@ -436,8 +416,8 @@ class ResolvConf {
 		}
 	}
 
-	parseSort(text) {
-		assert(typeof text === 'string');
+	parseSort(text: string) {
+		// assert(typeof text === 'string');
 
 		const list = text.trim().toLowerCase();
 
@@ -448,8 +428,8 @@ class ResolvConf {
 		}
 	}
 
-	parseOptions(line) {
-		assert(typeof line === 'string');
+	parseOptions(line: string) {
+		// assert(typeof line === 'string');
 
 		const options = util.splitSP(line);
 
@@ -551,8 +531,8 @@ class ResolvConf {
 		return this;
 	}
 
-	fromString(text) {
-		assert(typeof text === 'string');
+	fromString(text: string) {
+		// assert(typeof text === 'string');
 
 		this.clearServers();
 
@@ -596,7 +576,7 @@ class ResolvConf {
 		return this;
 	}
 
-	static fromString(text) {
+	static fromString(text: string) {
 		return new this().fromString(text);
 	}
 
@@ -610,13 +590,13 @@ class ResolvConf {
 		return this;
 	}
 
-	fromFile(file) {
-		assert(typeof file === 'string');
+	fromFile(file: string) {
+		// assert(typeof file === 'string');
 		const text = fs.readFileSync(file, 'utf8');
 		return this.fromString(text);
 	}
 
-	static fromFile(file) {
+	static fromFile(file: string) {
 		return new this().fromFile(file);
 	}
 
@@ -642,13 +622,13 @@ class ResolvConf {
 		return new this().fromSystem();
 	}
 
-	async fromFileAsync(file) {
-		assert(typeof file === 'string');
+	async fromFileAsync(file: string) {
+		// assert(typeof file === 'string');
 		const text = await fs.readFile(file, 'utf8');
 		return this.fromString(text);
 	}
 
-	static fromFileAsync(file) {
+	static fromFileAsync(file: string) {
 		return new this().fromFileAsync(file);
 	}
 
@@ -674,9 +654,3 @@ class ResolvConf {
 		return new this().fromSystemAsync();
 	}
 }
-
-/*
- * Expose
- */
-
-export default ResolvConf;

@@ -6,30 +6,31 @@
 
 'use strict';
 
-import DNSServer from "./dns";
+import DNSServer, {IDNSServerOptions} from "./dns";
 import Zone from "../zone";
 import DNSResolver from "../resolver/dns";
 import {Message} from "../wire";
+
+export interface IAuthServerOptions extends IDNSServerOptions {
+
+}
 
 /**
  * AuthServer
  * @extends EventEmitter
  */
+export default class AuthServer extends DNSServer<DNSResolver> {
+	zone = new Zone();
+	file: string | null = null;
+	ra = false;
 
-class AuthServer extends DNSServer<DNSResolver> {
-	zone: Zone;
-	file: string;
-	ra: boolean;
-
-	constructor(options) {
+	constructor(options?: IAuthServerOptions) {
 		super(options);
-		this.zone = new Zone();
-		this.file = null;
-		this.ra = false;
+
 		this.initOptions(options);
 	}
 
-	initOptions(options) {
+	initOptions(options?: IAuthServerOptions) {
 		return super.initOptions(options);
 	}
 
@@ -51,9 +52,3 @@ class AuthServer extends DNSServer<DNSResolver> {
 		return this.zone.resolve(name, type);
 	}
 }
-
-/*
- * Expose
- */
-
-export default AuthServer;

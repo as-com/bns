@@ -12,22 +12,18 @@ import {Code, codeToString} from "./constants";
  * DNS Error
  * @extends {Error}
  */
-
-class DNSError extends Error {
+export default class DNSError extends Error {
 	type: string;
 	code: string;
-	errno: string;
+	errno: Code;
 
-	constructor(msg, code) {
+	constructor(msg: string | number, code: Code = Code.SERVFAIL) {
 		super();
 
 		if (typeof msg === 'number') {
 			code = msg;
 			msg = '';
 		}
-
-		if (code == null)
-			code = Code.SERVFAIL;
 
 		if (msg)
 			msg = `: ${msg}.`;
@@ -44,9 +40,3 @@ class DNSError extends Error {
 			Error.captureStackTrace(this, DNSError);
 	}
 }
-
-/*
- * Expose
- */
-
-export default DNSError;

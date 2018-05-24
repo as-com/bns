@@ -17,7 +17,7 @@ import {DNS_PORT} from "./constants";
 import * as dnssec from "./dnssec";
 import * as util from "./util";
 import * as wire from "./wire";
-import {AAAARecord, ARecord, NSRecord, QuestionClass, Record, RecordType} from "./wire";
+import {AAAARecord, ARecord, DNSKEYRecord, DSRecord, NSRecord, QuestionClass, Record, RecordType} from "./wire";
 /*
  * Constants
  */
@@ -26,20 +26,15 @@ import ROOT_HINTS from "./roothints";
 /**
  * Hints
  */
-
-class Hints {
-	ns: string[];
-	inet4: Map<string, string>;
-	inet6: Map<string, string>;
-	anchors: any[];
-	port: number;
+export default class Hints {
+	ns: string[] = [];
+	inet4 = new Map<string, string>();
+	inet6 = new Map<string, string>();
+	anchors: Record<DSRecord>[] = [];
+	port = DNS_PORT;
 
 	constructor() {
-		this.ns = [];
-		this.inet4 = new Map();
-		this.inet6 = new Map();
-		this.anchors = [];
-		this.port = DNS_PORT;
+
 	}
 
 	inject(hints) {
@@ -101,7 +96,7 @@ class Hints {
 		return this.fromRoot();
 	}
 
-	addServer(name, addr) {
+	addServer(name: string, addr: string) {
 		if (!util.isName(name))
 			throw new Error('Invalid name.');
 
@@ -124,7 +119,7 @@ class Hints {
 		return this;
 	}
 
-	removeServer(name) {
+	removeServer(name: string) {
 		if (!util.isName(name))
 			throw new Error('Invalid name.');
 
@@ -143,14 +138,14 @@ class Hints {
 		return this;
 	}
 
-	addAnchor(ds) {
+	addAnchor(ds: string | Record<DSRecord | DNSKEYRecord>) {
 		if (typeof ds === 'string')
-			ds = Record.fromString(ds);
+			ds = Record.fromString<Record<DSRecord | DNSKEYRecord>>(ds);
 
-		assert(ds instanceof Record);
+		// assert(ds instanceof Record);
 
 		if (ds.type === RecordType.DNSKEY)
-			ds = dnssec.createDS(ds, dnssec.HashAlg.SHA256);
+			ds = dnssec.createDS(ds as Record<DNSKEYRecord>, dnssec.HashAlg.SHA256);
 
 		assert(ds.type === RecordType.DS);
 
@@ -165,19 +160,19 @@ class Hints {
 		if (ds.ttl === 0)
 			ds.ttl = 3600000;
 
-		this.anchors.push(ds);
+		this.anchors.push(ds as Record<DSRecord>);
 
 		return this;
 	}
 
-	removeAnchor(ds) {
+	removeAnchor(ds: string | Record<DSRecord | DNSKEYRecord>) {
 		if (typeof ds === 'string')
-			ds = Record.fromString(ds);
+			ds = Record.fromString<Record<DSRecord | DNSKEYRecord>>(ds);
 
-		assert(ds instanceof Record);
+		// assert(ds instanceof Record);
 
 		if (ds.type === RecordType.DNSKEY)
-			ds = dnssec.createDS(ds, dnssec.HashAlg.SHA256);
+			ds = dnssec.createDS(ds as Record<DNSKEYRecord>, dnssec.HashAlg.SHA256);
 
 		assert(ds.type === RecordType.DS);
 
@@ -198,7 +193,7 @@ class Hints {
 		return this;
 	}
 
-	getAuthority(inet6) {
+	getAuthority(inet6: string) {
 		if (this.ns.length === 0)
 			throw new Error('No nameservers available.');
 
@@ -222,13 +217,13 @@ class Hints {
 		return auth;
 	}
 
-	_toRecord(name) {
-		const records = [];
+	_toRecord(name: string) {
+		const records: Record[] = [];
 
 		const inet4 = this.inet4.get(name);
 		const inet6 = this.inet6.get(name);
 
-		const rr = new Record();
+		const rr = new Record<NSRecord>();
 		const rd = new NSRecord();
 		rr.name = '.';
 		rr.ttl = 3600000;
@@ -239,7 +234,7 @@ class Hints {
 		records.push(rr);
 
 		if (inet4) {
-			const rr = new Record();
+			const rr = new Record<ARecord>();
 			const rd = new ARecord();
 			rr.name = name.toUpperCase();
 			rr.ttl = 3600000;
@@ -250,7 +245,7 @@ class Hints {
 		}
 
 		if (inet6) {
-			const rr = new Record();
+			const rr = new Record<AAAARecord>();
 			const rd = new AAAARecord();
 			rr.name = name.toUpperCase();
 			rr.ttl = 3600000;
@@ -264,7 +259,7 @@ class Hints {
 	}
 
 	toRecords() {
-		const records = [];
+		const records: Record[] = [];
 
 		for (const ns of this.ns) {
 			for (const rr of this._toRecord(ns))
@@ -305,17 +300,17 @@ class Hints {
 		return out;
 	}
 
-	fromRecords(records) {
+	fromRecords(records: Record[]) {
 		for (const rr of records) {
 			const name = rr.name.toLowerCase();
 
 			switch (rr.type) {
 				case RecordType.A: {
-					this.inet4.set(name, rr.data.address);
+					this.inet4.set(name, (rr.data as ARecord).address);
 					break;
 				}
 				case RecordType.AAAA: {
-					this.inet6.set(name, rr.data.address);
+					this.inet6.set(name, (rr.data as AAAARecord).address);
 					break;
 				}
 			}
@@ -329,7 +324,7 @@ class Hints {
 
 			switch (rr.type) {
 				case RecordType.NS: {
-					const ns = rr.data.ns.toLowerCase();
+					const ns = (rr.data as NSRecord).ns.toLowerCase();
 
 					if (this.inet4.has(ns)
 						|| this.inet6.has(ns)) {
@@ -340,12 +335,12 @@ class Hints {
 				}
 
 				case RecordType.DS: {
-					this.anchors.push(rr.clone());
+					this.anchors.push((rr as Record<DSRecord>).clone());
 					break;
 				}
 
 				case RecordType.DNSKEY: {
-					const ds = dnssec.createDS(rr, dnssec.HashAlg.SHA256);
+					const ds = dnssec.createDS(rr as Record<DNSKEYRecord>, dnssec.HashAlg.SHA256);
 					this.anchors.push(ds);
 					break;
 				}
@@ -355,20 +350,20 @@ class Hints {
 		return this;
 	}
 
-	static fromRecords(records) {
+	static fromRecords(records: Record[]) {
 		return new this().fromRecords(records);
 	}
 
-	fromString(text) {
+	fromString(text: string) {
 		const records = wire.fromZone(text);
 		return this.fromRecords(records);
 	}
 
-	static fromString(text) {
+	static fromString(text: string) {
 		return new this().fromString(text);
 	}
 
-	fromJSON(json) {
+	fromJSON(json: any[]) {
 		assert(Array.isArray(json));
 
 		const records = [];
@@ -378,7 +373,7 @@ class Hints {
 		return this.fromRecords(records);
 	}
 
-	static fromJSON(json) {
+	static fromJSON(json: any[]) {
 		return new this().fromJSON(json);
 	}
 
@@ -390,13 +385,13 @@ class Hints {
 		return new this().fromRoot();
 	}
 
-	fromFile(file) {
-		assert(typeof file === 'string');
+	fromFile(file: string) {
+		// assert(typeof file === 'string');
 		const text = fs.readFileSync(file, 'utf8');
 		return this.fromString(text);
 	}
 
-	static fromFile(file) {
+	static fromFile(file: string) {
 		return new this().fromFile(file);
 	}
 
@@ -420,13 +415,13 @@ class Hints {
 		return new this().fromSystem();
 	}
 
-	async fromFileAsync(file) {
-		assert(typeof file === 'string');
+	async fromFileAsync(file: string) {
+		// assert(typeof file === 'string');
 		const text = await fs.readFile(file, 'utf8');
 		return this.fromString(text);
 	}
 
-	static fromFileAsync(file) {
+	static fromFileAsync(file: string) {
 		return new this().fromFileAsync(file);
 	}
 
@@ -450,9 +445,3 @@ class Hints {
 		return new this().fromSystemAsync();
 	}
 }
-
-/*
- * Expose
- */
-
-export default Hints;

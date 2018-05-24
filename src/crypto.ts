@@ -20,12 +20,10 @@ const EdDSA = elliptic.eddsa;
  */
 
 export abstract class BaseHash {
-	name: string;
-	ctx: Hash;
+	ctx: Hash | null = null;
 
-	constructor(name: string) {
-		this.name = name;
-		this.ctx = null;
+	constructor(public name: string) {
+
 	}
 
 	init() {
@@ -90,10 +88,10 @@ export const ccmp = crypto.timingSafeEqual;
  * RSA
  */
 
-export function signRSA(hash, data, key) {
+export function signRSA(hash, data: Buffer, key: Buffer) {
 	assert(hash && typeof hash.name === 'string', 'No algorithm selected.');
-	assert(Buffer.isBuffer(data));
-	assert(Buffer.isBuffer(key));
+	// assert(Buffer.isBuffer(data));
+	// assert(Buffer.isBuffer(key));
 
 	const name = toName('RSA', hash);
 	const pem = toPEM(key, 'RSA PRIVATE KEY');
@@ -104,7 +102,7 @@ export function signRSA(hash, data, key) {
 	return ctx.sign(pem);
 }
 
-export function verifyRSA(hash, data, sig, key) {
+export function verifyRSA(hash, data: Buffer, sig: Buffer, key: Buffer) {
 	assert(hash && typeof hash.hashName === 'string', 'No algorithm selected.');
 	assert(Buffer.isBuffer(data));
 	assert(Buffer.isBuffer(sig));
@@ -131,11 +129,11 @@ export function verifyRSA(hash, data, sig, key) {
  * ECDSA
  */
 
-export function signECDSA(curve, hash, data, key) {
-	assert(typeof curve === 'string', 'No curve selected.');
+export function signECDSA(curve: string, hash, data: Buffer, key: Buffer) {
+	// assert(typeof curve === 'string', 'No curve selected.');
 	assert(hash && typeof hash.name === 'string', 'No algorithm selected.');
-	assert(Buffer.isBuffer(data));
-	assert(Buffer.isBuffer(key));
+	// assert(Buffer.isBuffer(data));
+	// assert(Buffer.isBuffer(key));
 
 	const size = curveSize(curve);
 	assert(size !== 0, 'Unknown curve.');
@@ -150,12 +148,12 @@ export function signECDSA(curve, hash, data, key) {
 	return Buffer.concat([r, s]);
 }
 
-export function verifyECDSA(curve, hash, data, sig, key) {
-	assert(typeof curve === 'string', 'No curve selected.');
+export function verifyECDSA(curve: string, hash, data: Buffer, sig: Buffer, key: Buffer) {
+	// assert(typeof curve === 'string', 'No curve selected.');
 	assert(hash && typeof hash.name === 'string', 'No algorithm selected.');
-	assert(Buffer.isBuffer(data));
-	assert(Buffer.isBuffer(sig));
-	assert(Buffer.isBuffer(key));
+	// assert(Buffer.isBuffer(data));
+	// assert(Buffer.isBuffer(sig));
+	// assert(Buffer.isBuffer(key));
 
 	const size = curveSize(curve);
 	assert(size !== 0, 'Unknown curve.');
@@ -188,11 +186,11 @@ export function verifyECDSA(curve, hash, data, sig, key) {
  * EDDSA
  */
 
-export function signEDDSA(curve, hash, data, key) {
-	assert(typeof curve === 'string', 'No curve selected.');
+export function signEDDSA(curve: string, hash, data: Buffer, key: Buffer) {
+	// assert(typeof curve === 'string', 'No curve selected.');
 	assert(hash && typeof hash.name === 'string', 'No algorithm selected.');
-	assert(Buffer.isBuffer(data));
-	assert(Buffer.isBuffer(key));
+	// assert(Buffer.isBuffer(data));
+	// assert(Buffer.isBuffer(key));
 	assert(elliptic.curves[curve], 'Unknown curve.');
 
 	const ed = new EdDSA(curve);
@@ -202,12 +200,12 @@ export function signEDDSA(curve, hash, data, key) {
 	return sig.toBytes();
 }
 
-export function verifyEDDSA(curve, hash, data, sig, key) {
-	assert(typeof curve === 'string', 'No curve selected.');
+export function verifyEDDSA(curve: string, hash, data: Buffer, sig: Buffer, key: Buffer) {
+	// assert(typeof curve === 'string', 'No curve selected.');
 	assert(hash && typeof hash.name === 'string', 'No algorithm selected.');
-	assert(Buffer.isBuffer(data));
-	assert(Buffer.isBuffer(sig));
-	assert(Buffer.isBuffer(key));
+	// assert(Buffer.isBuffer(data));
+	// assert(Buffer.isBuffer(sig));
+	// assert(Buffer.isBuffer(key));
 	assert(elliptic.curves[curve], 'Unknown curve.');
 
 	const ed = new EdDSA(curve);
@@ -232,17 +230,17 @@ export function verifyEDDSA(curve, hash, data, sig, key) {
  * Helpers
  */
 
-function toName(alg, hash) {
+function toName(alg: string, hash) {
 	return `${alg}-${hash.hashName.toUpperCase()}`;
 }
 
-function toPEM(der, type) {
+function toPEM(der: Buffer, type: string) {
 	let pem = '';
 
-	der = der.toString('base64');
+	let derStr = der.toString('base64');
 
-	for (let i = 0; i < der.length; i += 64)
-		pem += der.slice(i, i + 64) + '\n';
+	for (let i = 0; i < derStr.length; i += 64)
+		pem += derStr.slice(i, i + 64) + '\n';
 
 	return ''
 		+ `-----BEGIN ${type}-----\n`
@@ -259,8 +257,8 @@ function curveSize(curve) {
 	return desc.hash.outSize >>> 3;
 }
 
-function toASN1(buf) {
-	assert(Buffer.isBuffer(buf));
+function toASN1(buf: Buffer) {
+	// assert(Buffer.isBuffer(buf));
 
 	if (buf.length === 0)
 		return null;

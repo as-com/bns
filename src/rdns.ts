@@ -9,13 +9,13 @@
 import API from "./api";
 import Cache from "./cache";
 import Hints from "./hints";
-import RecursiveResolver from "./resolver/recursive";
+import RecursiveResolver, {IRecursiveResolverOptions} from "./resolver/recursive";
 
 let hints = null;
 
 const cache = new Cache();
 
-function createResolver(options) {
+function createResolver(options?: IRecursiveResolverOptions) {
 	if (!hints)
 		hints = Hints.fromRoot();
 

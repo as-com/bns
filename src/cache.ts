@@ -19,38 +19,31 @@ import * as util from "./util";
  * Cache
  */
 
-class Cache {
-	map: Map<string, CacheEntry>;
-	queue: Heap;
-	size: number;
-	maxSize: number;
+export default class Cache {
+	map = new Map<string, CacheEntry>();
+	queue = new Heap((a, b) => a[1] - b[1]);
+	size = 0;
+	maxSize = 5 << 20;
 
-	constructor() {
-		this.map = new Map();
-		this.queue = new Heap((a, b) => a[1] - b[1]);
-		this.size = 0;
-		this.maxSize = 5 << 20;
-	}
-
-	get(id) {
+	get(id: string) {
 		return this.map.get(id) || null;
 	}
 
-	has(id) {
+	has(id: string) {
 		return this.map.has(id);
 	}
 
-	set(id, entry) {
+	set(id: string, entry: CacheEntry) {
 		this.map.set(id, entry);
 		return this;
 	}
 
-	remove(id) {
+	remove(id: string) {
 		this.map.delete(id);
 		return this;
 	}
 
-	hash(qs, zone) {
+	hash(qs: Question, zone: string) {
 		const n = qs.name.toLowerCase();
 		const t = qs.type.toString(10);
 		const z = zone.toLowerCase();
@@ -73,12 +66,12 @@ class Cache {
 		return this;
 	}
 
-	insert(qs, zone, msg, ad, eternal = false) {
-		assert(qs instanceof Question);
-		assert(typeof zone === 'string');
-		assert(msg instanceof Message);
-		assert(typeof ad === 'boolean');
-		assert(typeof eternal === 'boolean');
+	insert(qs: Question, zone: string, msg: Message, ad: boolean, eternal = false) {
+		// assert(qs instanceof Question);
+		// assert(typeof zone === 'string');
+		// assert(msg instanceof Message);
+		// assert(typeof ad === 'boolean');
+		// assert(typeof eternal === 'boolean');
 
 		const id = this.hash(qs, zone);
 		const ttl = msg.minTTL();
@@ -197,7 +190,7 @@ export class CacheEntry {
 		return this.time + this.ttl;
 	}
 
-	usage(id) {
+	usage(id: string) {
 		let size = 0;
 		size += id.length * 2;
 		size += 80 + this.msg.length;
@@ -205,7 +198,7 @@ export class CacheEntry {
 		return size;
 	}
 
-	setAD(ad) {
+	setAD(ad: boolean) {
 		let bits = this.msg.readUInt16BE(2, true);
 
 		if (ad)
@@ -216,7 +209,7 @@ export class CacheEntry {
 		this.msg.writeUInt16BE(bits, 2, true);
 	}
 
-	expired(now) {
+	expired(now: number) {
 		// Someone changed
 		// their system time.
 		// Clear cache.
@@ -234,12 +227,6 @@ export class CacheEntry {
  * Helpers
  */
 
-function queueUsage(id) {
+function queueUsage(id: string) {
 	return id.length * 2 + 20;
 }
-
-/*
- * Expose
- */
-
-export default Cache;
