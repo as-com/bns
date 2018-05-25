@@ -1,6 +1,6 @@
 {
 	"name": "@as-com/bns",
-	"version": "0.0.18",
+	"version": "0.0.19",
 	"description": "DNS bike-shed -- Now with types!",
 	"private": false,
 	"keywords": [
