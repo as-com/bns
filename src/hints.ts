@@ -193,7 +193,7 @@ export default class Hints {
 		return this;
 	}
 
-	getAuthority(inet6: string) {
+	getAuthority(inet6: boolean) {
 		if (this.ns.length === 0)
 			throw new Error('No nameservers available.');
 
